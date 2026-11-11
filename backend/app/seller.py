@@ -14,6 +14,7 @@ SELLER = {
         "new_finance_leader": "a new finance leader reviews tools and processes in the first months",
         "new_entity_or_country": "a new country or entity adds vendors, currencies, VAT/GST and a second close",
         "fast_growth": "headcount and order volume grow faster than the finance team",
+        "new_markets": "new cities, markets, facilities, a bigger HQ or a large new partner add vendors, contracts, invoices and approvals",
         "funding": "new capital raises expectations for audit-ready books and faster reporting",
         "finance_hiring": "hiring AP/accounting staff shows manual work is piling up",
         "acquisition": "an acquisition means merging two sets of vendors, ledgers and approval flows",

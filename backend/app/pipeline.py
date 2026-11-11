@@ -387,13 +387,15 @@ class Runner:
         rx = re.compile(r"\b(" + "|".join(re.escape(w) for w in FINANCE_TITLE_WORDS) + r")\b", re.I)
         for j in jobs:
             t = (j.get("job_details") or {}).get("title") or ""
-            (kept if rx.search(t) else dropped).append(j)
+            (kept if rx.search(t) and not re.search(r"\bintern(ship)?\b", t, re.I) else dropped).append(j)
         for j in dropped:
-            self.log(f"Ignored “{j['job_details']['title']}”: search matched it loosely, title isn't a finance role", "warn")
+            why = "internships say little about the team's workload" if re.search(r"\bintern", j['job_details']['title'], re.I) \
+                else "search matched it loosely, title isn't a finance role"
+            self.log(f"Ignored “{j['job_details']['title']}”: {why}", "warn")
         self.jobs = kept
         for j in kept:
             self.log(f"{(j.get('metadata') or {}).get('date_added', '')[:10]} · {j['job_details']['title']}")
-        return f"{len(kept)} relevant roles ({len(dropped)} loose matches ignored)"
+        return f"{len(kept)} relevant roles ({len(dropped)} ignored)"
 
     # ---------------------------------------------------------------- signals
     def s_signals(self):
@@ -480,10 +482,14 @@ class Runner:
             flags = []
             if not ev.get("about_company", True):
                 flags.append("off_topic")
-            if ev.get("sensitive") or SENSITIVE.search(titles) or ev.get("type") in ("layoffs", "legal", "security"):
+            kw_hits = [a.get("article_title") for a in arts if SENSITIVE.search(a.get("article_title") or "")]
+            if ev.get("sensitive") or ev.get("type") in ("layoffs", "legal", "security") \
+                    or (kw_hits and len(kw_hits) / len(arts) >= 0.5):
                 flags.append("sensitive")
+            elif kw_hits:
+                flags.append("keyword_only")
             s = add(kind="news", event_type=ev.get("type", "other"), about="company", date=first,
-                    text=ev.get("summary") or ev.get("label"), label=ev.get("label"),
+                    text=ev.get("summary") or ev.get("label"), label=ev.get("label"), keyword_hits=kw_hits[:3] if kw_hits else [],
                     coverage=len(outlets), flags=flags, amounts=sorted(set(money_usd(titles))),
                     sources=[{"label": a.get("article_publisher_name"), "url": a.get("article_url"),
                               "title": a.get("article_title"), "date": a["article_publish_date"][:10]} for a in arts[:12]])
@@ -503,6 +509,10 @@ class Runner:
             if "off_topic" in s["flags"]:
                 self.check("off_topic", "pass", f"Ignored: “{s.get('label') or s['text'][:60]}”",
                            "Not really about this company (listicle, database page or passing mention).", [s["id"]])
+            if "keyword_only" in s["flags"]:
+                self.check("keyword", "pass", f"Kept despite a sensitive word: “{s['keyword_hits'][0][:80]}”",
+                           "The keyword filter flagged it, the model read the headline in context and found nothing sensitive. "
+                           f"{len(s['keyword_hits'])} of {s['coverage']} outlets used such a word.", [s["id"]])
             if "sensitive" in s["flags"]:
                 n_block += 1
                 self.check("sensitive", "block", f"Sensitive news is never a hook: “{s.get('label') or s['text'][:60]}”",
@@ -621,7 +631,9 @@ class Runner:
         hook = ranked[0] if ranked else None
         support = next((s for s in sig if s["about"] == "person" and s is not hook
                         and not set(s["flags"]) & {"sensitive", "stale"}), None)
-        context = next((s for s in ranked[1:] if s is not support and s["about"] == "company"), None)
+        crowded = [s for s in sig if "crowded" in s["flags"] and s["kind"] == "news"
+                   and not set(s["flags"]) & {"sensitive", "off_topic", "competitor"} and s is not hook]
+        context = crowded[0] if crowded else next((s for s in ranked[1:] if s is not support and s["about"] == "company"), None)
         for i, s in enumerate(ranked[1:], 2):
             if not s.get("why_not"):
                 s["why_not"] = f"Ranked #{i}: lower score than the chosen hook"
@@ -664,6 +676,9 @@ class Runner:
                 f"that fits this company best (two only if both fit). Then one low-friction ask ({SELLER['ask']}). "
                 f"Under 100 words in the body. Tone: {SELLER['tone']}. Use absolute dates or none, never 'last week'. "
                 "Write results as the customer's result ('Instacart cut ...'), not 'we cut'. "
+                "Never narrate the reader's own life back to them ('You became CFO in July'); refer to it naturally "
+                "('A few months into the CFO seat', 'Coming from Tesla's finance team'). The optional_context fact, if "
+                "used, goes in sentence 2 or later, never first. "
                 "No flattery, no 'congrats', no 'I noticed', no 'I hope', no exclamation marks, no emojis, no placeholders "
                 "except sign the email '[Your name]'. Subject: under 7 words, lowercase except names, no clickbait.\n"
                 "Return {\"subject\": str, \"body\": str, \"claims\": [{\"text\": exact sentence from the body that states a fact, "

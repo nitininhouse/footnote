@@ -4,8 +4,9 @@ import { go } from '../App'
 import { Chip } from './bits'
 
 const SAMPLES = [
-  { name: 'Kristin Schaefer', company: 'Whatnot', title: 'CFO', what: 'Happy path. The funding story is crowded and the sources disagree on the amount, so it opens on the Dublin expansion.' },
-  { name: 'Kristin Schaefer', company: 'Atomic', title: 'General Partner', what: 'Job change. She left Atomic in May 2026; the process stops and offers to follow her to Whatnot.' },
+  { name: 'Sendil Palani', company: 'Zipline', title: 'CFO', what: 'New CFO (ex-Tesla). The $1.5B round ran on 55 outlets, so it becomes context and the email opens on his first months and the Walmart expansion.' },
+  { name: 'Kristin Schaefer', company: 'Whatnot', title: 'CFO', what: 'Sources disagree on the funding amount and a sensitive story is blocked; it opens on the new Dublin HQ.' },
+  { name: 'Kristin Schaefer', company: 'Atomic', title: 'General Partner', what: 'Job change: she left Atomic in May 2026. The process stops and offers to follow her.' },
 ]
 
 export default function NewRun({ cfg }: { cfg: Config | null }) {
