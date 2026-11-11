@@ -443,7 +443,7 @@ class Runner:
                 label=n.get("article_title"),
                 sources=[{"label": n.get("article_publisher_name"), "url": n.get("article_url"),
                           "title": n.get("article_title"), "date": n["article_publish_date"][:10]}])
-            if len([s for s in sig if s["kind"] == "news"]) >= 60:
+            if len([s for s in sig if s["kind"] == "news"]) >= 40:
                 break
         for s in sig:
             dt = d(s.get("date"))
@@ -490,6 +490,8 @@ class Runner:
         data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(self._brief())}\n\n{ask}",
                              tag="agent", prefer="gemini", temperature=0.4, max_tokens=8000)
         self.log(f"Agent: {meta['model']}{' (cached)' if meta['cached'] else ''}, {meta['ms'] / 1000:.1f} s")
+        if meta.get("fallback_reason"):
+            self.log(f"Gemini did not answer ({meta['fallback_reason'][:160]}), so {meta['model']} wrote this draft.", "warn")
         hook_ids = [h for h in (data.get("hook") or []) if h in sig]
         for x in data.get("not_chosen") or []:
             if x.get("id") in sig:
@@ -503,7 +505,8 @@ class Runner:
                             "support": [], "context": None, "ranking": []}
         body = data.get("body") or ""
         self.run["draft"] = {"subject": data.get("subject") or "", "body": body, "claims": data.get("claims") or [],
-                             "words": len(body.split()), "writer": meta["model"], "lint": [], "issues": []}
+                             "words": len(body.split()), "writer": meta["model"], "lint": [], "issues": [],
+                             "fallback_reason": meta.get("fallback_reason") or ""}
         for h in hook_ids:
             self.log(f"Hook: {sig[h].get('label') or sig[h]['text']}")
         self.log(f"Why: {data.get('why')}")

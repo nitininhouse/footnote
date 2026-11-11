@@ -40,7 +40,7 @@ def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None
     f = config.CACHE / f"llm_{tag}_{h}.json"
     if f.exists():
         rec = json.loads(f.read_text())
-        return rec["data"], {"model": rec["model"], "cached": True, "ms": 0}
+        return rec["data"], {"model": rec["model"], "cached": True, "ms": 0, "fallback_reason": rec.get("fallback_reason", "")}
     errors = []
     models = sorted(config.LLM_MODELS, key=lambda m: 0 if prefer and m["name"].startswith(prefer) else 1)
     for m in models:
@@ -49,7 +49,7 @@ def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None
         for attempt in range(2):
             t0 = time.time()
             try:
-                r = requests.post(f"{m['base']}/chat/completions", timeout=90,
+                r = requests.post(f"{m['base']}/chat/completions", timeout=150,
                                   headers={"authorization": f"Bearer {m['key']}"},
                                   json={"model": m["name"], "temperature": temperature, "max_tokens": max_tokens,
                                         "response_format": {"type": "json_object"},
@@ -64,8 +64,9 @@ def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None
                     break
                 text = r.json()["choices"][0]["message"]["content"] or ""
                 data = _json(text)
-                f.write_text(json.dumps({"model": m["name"], "data": data}))
-                return data, {"model": m["name"], "cached": False, "ms": int((time.time() - t0) * 1000)}
+                f.write_text(json.dumps({"model": m["name"], "data": data, "fallback_reason": "; ".join(errors)}))
+                return data, {"model": m["name"], "cached": False, "ms": int((time.time() - t0) * 1000),
+                              "fallback_reason": "; ".join(errors)}
             except (requests.RequestException, ValueError, KeyError, LLMError) as e:
                 errors.append(f"{m['name']}: {e.__class__.__name__} {str(e)[:80]}")
                 time.sleep(1)

@@ -302,6 +302,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
       {/* email */}
       <div>
         {dr.approve_blocked && !done && <div className="banner bad">{dr.approve_blocked}</div>}
+        {dr.fallback_reason && <div className="banner warn">Gemini did not answer, so the backup model ({dr.writer}) wrote this draft.</div>}
         {dr.low_personalisation && <div className="banner warn">Low personalisation: no specific hook was strong enough.</div>}
         {run.status === 'approved' && <div className="banner ok">Approved by {run.review?.reviewer}{run.review?.edited ? ' after edits' : ''}. Copy it into your email tool to send.</div>}
         {run.status === 'rejected' && <div className="banner warn">Rejected{run.review?.reason ? `: ${run.review.reason}` : ''}.</div>}

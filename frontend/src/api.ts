@@ -15,7 +15,7 @@ export type Draft = {
   subject: string; body: string; claims: Claim[]; lint: string[]; words: number; genericness?: number
   genericness_reason?: string; unlisted?: string[]; approve_blocked?: string; edited?: boolean
   original?: { subject: string; body: string }; low_personalisation?: boolean
-  issues?: Issue[]; reviewer?: string; writer?: string; rounds?: { reviewer: string; independent: boolean; issues: Issue[]; verdict: string; body: string }[]
+  issues?: Issue[]; reviewer?: string; writer?: string; fallback_reason?: string; rounds?: { reviewer: string; independent: boolean; issues: Issue[]; verdict: string; body: string }[]
 }
 export type Check = { kind: string; status: 'pass' | 'warn' | 'block'; title: string; detail: string; signal_ids: string[] }
 export type Question = { kind: string; text: string; options: { id: string; label: string; detail?: string; url?: string; input?: boolean }[] }

@@ -47,9 +47,9 @@ W_RELEVANCE, W_RECENCY, W_PERSONAL, W_SOURCE = 0.40, 0.25, 0.20, 0.15
 MIN_HOOK_SCORE = 2.4          # best hook below this -> "low signal"
 
 # Draft rules
-MAX_WORDS = 110
+MAX_WORDS = 100
 BANNED = ["i hope this finds you well", "i came across your profile", "i wanted to reach out",
-          "i noticed that", "congrats on", "congratulations on", "game-changer", "game changer",
+          "i noticed", "i came across", "congrats on", "congratulations on", "game-changer", "game changer",
           "synergy", "revolutionize", "cutting-edge", "in today's fast-paced", "touch base",
           "just checking in", "quick question"]
 
