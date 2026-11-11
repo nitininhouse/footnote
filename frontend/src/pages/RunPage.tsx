@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, EDGE, secs, type Claim, type Run, type Signal } from '../api'
-import { Chip, Icon, Score, host } from './bits'
+import { Chip, Icon, host } from './bits'
 
 const ALL_STAGES = [
   ['intake', 'Check the request'], ['company', 'Find the company'], ['person', 'Confirm the person'],
@@ -187,17 +187,17 @@ function Checks({ run }: { run: Run }) {
 function Signals({ run }: { run: Run }) {
   const [showOff, setShowOff] = useState(false)
   const sig = run.signals.filter(s => showOff || !s.flags.includes('off_topic'))
-  const rank = run.hook?.ranking ?? []
-  const sorted = [...sig].sort((a, b) => (b.score?.total ?? -1) - (a.score?.total ?? -1))
+    const hookIds = run.hook?.ids ?? (run.hook?.id ? [run.hook.id] : [])
+  const sorted = [...sig].sort((a, b) => (hookIds.includes(b.id) ? 9 : b.fit ?? -1) - (hookIds.includes(a.id) ? 9 : a.fit ?? -1))
   const off = run.signals.filter(s => s.flags.includes('off_topic')).length
   return <div className="panel">
     <div className="panel-pad" style={{ paddingBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
-      <h2>Signals, ranked</h2>
+      <h2>Signals, as the strategist judged them</h2>
       {off > 0 && <button className="btn sm" onClick={() => setShowOff(!showOff)}>{showOff ? 'Hide' : 'Show'} {off} off-topic</button>}
     </div>
-    <table className="tbl"><thead><tr><th>Signal</th><th>Date</th><th className="r">Outlets</th><th className="r">Score</th></tr></thead><tbody>
+    <table className="tbl"><thead><tr><th>Signal</th><th>Date</th><th className="r">Outlets</th><th className="r">Fit</th></tr></thead><tbody>
       {sorted.map(s => {
-        const chosen = run.hook?.id === s.id
+        const chosen = hookIds.includes(s.id)
         return <tr key={s.id} className={chosen ? 'chosen' : s.eligible === false ? 'out' : ''}>
           <td>
             <div>{s.label || s.text}</div>
@@ -205,13 +205,14 @@ function Signals({ run }: { run: Run }) {
               <span className="tag">{(s.event_type || s.kind).replace('_', ' ')}</span>
               {s.flags.filter(f => f !== 'off_topic').map(f => <span key={f} className={`tag ${['sensitive', 'competitor'].includes(f) ? 'bad' : 'warn'}`}>{f}</span>)}
               {chosen && <span className="tag ok">chosen hook</span>}
-              {!chosen && rank.includes(s.id) && <span className="tag">#{rank.indexOf(s.id) + 1}</span>}
-              {s.why_not && !chosen && <span className="faint" style={{ fontSize: 12 }}>{s.why_not}</span>}
+              {!chosen && s.use && s.use !== 'skip' && <span className="tag">{s.use}</span>}
+              {s.reason && <span className="faint" style={{ fontSize: 12 }}>{s.reason}</span>}
+              {s.judge2 && <span className="faint" style={{ fontSize: 12 }}>· bad news? {s.judge1?.model.split('-')[0]}: {s.judge1?.sensitive ? 'yes' : 'no'}, {s.judge2.model.split('-')[0]}: {s.judge2.sensitive ? 'yes' : 'no'}</span>}
             </div>
           </td>
           <td className="mono" style={{ whiteSpace: 'nowrap' }}>{s.date?.slice(0, 10) || '—'}</td>
           <td className="r mono">{s.kind === 'news' ? s.coverage : ''}</td>
-          <td className="r mono">{s.score ? s.score.total.toFixed(2) : '—'}</td>
+          <td className="r mono">{s.fit != null ? `${s.fit}/5` : '—'}</td>
         </tr>
       })}
     </tbody></table>
@@ -273,9 +274,10 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
     return () => removeEventListener('keydown', k)
   })
 
-  const hook = run.hook?.id ? sigs[run.hook.id] : null
-  const rejected = run.signals.filter(s => s.id !== hook?.id && s.score && !s.flags.includes('off_topic'))
-    .sort((a, b) => (b.score!.total - a.score!.total)).slice(0, 6)
+  const hookIds = run.hook?.ids ?? (run.hook?.id ? [run.hook.id] : [])
+  const hooks = hookIds.map(i => sigs[i]).filter(Boolean)
+  const rejected = run.signals.filter(s => !hookIds.includes(s.id) && !s.flags.includes('off_topic') && s.kind !== 'background')
+    .sort((a, b) => (b.fit ?? 0) - (a.fit ?? 0)).slice(0, 6)
   const verdictTone = (c: Claim) => c.removed ? '' : c.verdict || 'unsupported'
 
   return (
@@ -335,12 +337,14 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
         </div>
         {err && <div className="banner bad" style={{ marginTop: 10 }}>{err}</div>}
         <div className="panel panel-pad" style={{ marginTop: 16 }}>
-          <h2>Fact-check</h2>
+          <h2>Independent review</h2>
+          <p className="muted" style={{ fontSize: 12.5, margin: '-4px 0 8px' }}>Written by {dr.writer}, checked by {dr.reviewer}{dr.reviewer === dr.writer ? ' (same model: not independent)' : ', a different model that did not see the writer\'s reasoning'}{(dr.rounds?.length ?? 0) > 1 ? `. Rewritten once after the first review.` : '.'}</p>
           {dr.claims.map((c, i) => <div className="check" key={i} onMouseEnter={() => setHl(i)} onMouseLeave={() => setHl(null)}>
             <span><span className={`tag ${c.removed ? '' : c.verdict === 'supported' ? 'ok' : c.verdict === 'partly' ? 'warn' : 'bad'}`}>{c.removed ? 'removed' : c.verdict}</span></span>
             <span>“{c.text}”<div className="d">{c.reason} {claimNums[i].length > 0 && <span className="mono">[{claimNums[i].join(', ')}]</span>}</div></span>
           </div>)}
           {(dr.unlisted || []).map((u, i) => <div className="check" key={'u' + i}><span><span className="tag bad">no source</span></span><span>“{u}”</span></div>)}
+          {(dr.issues || []).map((x, i) => <div className="check" key={'i' + i}><span><span className={`tag ${x.severity === 'block' ? 'bad' : 'warn'}`}>{x.severity === 'block' ? 'must fix' : 'note'}</span></span><span>{x.problem}{x.sentence && <div className="d">“{x.sentence}”</div>}</span></div>)}
           {dr.lint?.length > 0 && <div className="check"><span><span className="tag warn">style</span></span><span>{dr.lint.join('; ')}</span></div>}
           {dr.original && <details style={{ marginTop: 10 }}><summary className="muted" style={{ cursor: 'pointer' }}>Original draft before edits</summary><div className="email-body" style={{ padding: '10px 0 0', fontSize: 14 }}>{dr.original.body}</div></details>}
         </div>
@@ -349,21 +353,16 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
       {/* hook */}
       <div className="panel panel-pad">
         <h2>Why this hook</h2>
-        {hook ? <div className="hook-card">
-          <div style={{ fontWeight: 500 }}>{hook.label || hook.text}</div>
-          {hook.consequence && <div className="muted" style={{ fontSize: 13, margin: '4px 0 10px' }}>{hook.consequence}</div>}
-          {hook.score && <div style={{ display: 'grid', gap: 5 }}>
-            <Score label="Relevance" v={hook.score.relevance} /><Score label="Recency" v={hook.score.recency} />
-            <Score label="Personal" v={hook.score.personal} /><Score label="Source" v={hook.score.source} />
-            <div className="score-bar"><span>Total</span><span /><span className="mono r"><b>{hook.score.total.toFixed(2)}</b></span></div>
-          </div>}
+        {hooks.length > 0 ? <div className="hook-card">
+          {hooks.map(h => <div key={h.id} style={{ fontWeight: 500 }}>{h.label || h.text}</div>)}
+          {run.hook?.angle && <div className="muted" style={{ fontSize: 13, margin: '6px 0' }}>{run.hook.angle}</div>}
+          {run.hook?.why && <div style={{ fontSize: 13 }}>{run.hook.why}</div>}
+          <div className="faint" style={{ fontSize: 12, marginTop: 6 }}>Chosen by {run.hook?.model} · confidence {run.hook?.confidence}</div>
         </div> : <div className="muted">No hook was strong enough.</div>}
         <h3 style={{ marginTop: 16 }}>Not chosen</h3>
         {rejected.map(s => <div key={s.id} className="rej">
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span><span className="mono faint">{s.score?.total.toFixed(2)}</span></div>
-          <div className="why">{s.flags.includes('crowded') ? `Crowded: ${s.coverage} outlets ran it, every rep will open with it (−${s.score?.penalty})`
-            : s.flags.includes('sensitive') ? 'Sensitive news is never a hook'
-            : s.flags.includes('conflict') ? 'Sources disagree on the numbers' : s.why_not}</div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span><span className="mono faint">{s.fit != null ? `${s.fit}/5` : ''}</span></div>
+          <div className="why">{s.reason || s.flags.join(', ')}</div>
         </div>)}
         <h3 style={{ marginTop: 16 }}>Checks that fired</h3>
         {run.checks.filter(c => c.status !== 'pass' || c.kind === 'identity').slice(0, 8).map((c, i) =>

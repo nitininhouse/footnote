@@ -33,15 +33,17 @@ def _json(text):
     return json.loads(text[a:b + 1])
 
 
-def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm"):
-    """Return (parsed_json, meta). Raises LLMError if every model fails."""
-    h = hashlib.sha1(json.dumps([system, prompt, temperature]).encode()).hexdigest()[:16]
+def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None):
+    """Return (parsed_json, meta). `prefer` picks the first model to try ("gemini" or "deepseek");
+    the other is the fallback. meta["model"] says which one actually answered."""
+    h = hashlib.sha1(json.dumps([system, prompt, temperature, prefer]).encode()).hexdigest()[:16]
     f = config.CACHE / f"llm_{tag}_{h}.json"
     if f.exists():
         rec = json.loads(f.read_text())
         return rec["data"], {"model": rec["model"], "cached": True, "ms": 0}
     errors = []
-    for m in config.LLM_MODELS:
+    models = sorted(config.LLM_MODELS, key=lambda m: 0 if prefer and m["name"].startswith(prefer) else 1)
+    for m in models:
         if not m["key"]:
             continue
         for attempt in range(2):

@@ -5,12 +5,17 @@ export type Signal = {
   coverage: number; flags: string[]; sources: Source[]; age_days?: number | null
   score?: { relevance: number; recency: number; personal: number; source: number; bonus: number; penalty: number; total: number }
   eligible?: boolean; why_not?: string; why_chosen?: string; consequence?: string; trigger?: string; no_numbers?: boolean
+  fit?: number; use?: string; reason?: string; job_title?: string
+  judge1?: { model: string; sensitive: boolean; about_company: boolean; reason: string }
+  judge2?: { model: string; sensitive: boolean; about_company: boolean; reason: string }
 }
+export type Issue = { severity: string; sentence: string; problem: string }
 export type Claim = { text: string; facts: string[]; proof: number[]; verdict?: string; reason?: string; removed?: boolean }
 export type Draft = {
   subject: string; body: string; claims: Claim[]; lint: string[]; words: number; genericness?: number
   genericness_reason?: string; unlisted?: string[]; approve_blocked?: string; edited?: boolean
   original?: { subject: string; body: string }; low_personalisation?: boolean
+  issues?: Issue[]; reviewer?: string; writer?: string; rounds?: { reviewer: string; independent: boolean; issues: Issue[]; verdict: string; body: string }[]
 }
 export type Check = { kind: string; status: 'pass' | 'warn' | 'block'; title: string; detail: string; signal_ids: string[] }
 export type Question = { kind: string; text: string; options: { id: string; label: string; detail?: string; url?: string; input?: boolean }[] }
@@ -22,7 +27,7 @@ export type Run = {
   company_candidates?: { id: number; name: string; domain: string; size: string }[]
   person: { name: string; title: string; headline: string; url: string; start: string; tenure_days: number; location: string; past: { title: string; company: string; start: string; end: string }[] } | null
   company_data?: { headcount: number; headcount_yoy: number; last_round: { type: string; amount: number; date: string } | null; news_count: number; description: string }
-  signals: Signal[]; hook: { id: string | null; support: string | null; context: string | null; ranking: string[] } | null
+  signals: Signal[]; hook: { id: string | null; ids?: string[]; support: string[] | string | null; context: string | null; ranking: string[]; why?: string; angle?: string; confidence?: string; model?: string } | null
   draft: Draft | null; checks: Check[]; question: Question | null
   review: { action: string; at: string; reviewer: string; reason?: string; edited?: boolean } | null
   error?: { code: string; msg: string }; note?: string
@@ -73,7 +78,7 @@ export const STATUS: Record<string, { label: string; tone: string }> = {
 export const EDGE: Record<string, string> = {
   crowded: 'Crowded hook', conflict: 'Sources disagree', anomaly: 'Odd statistic', sensitive: 'Sensitive news',
   job_change: 'Job change', identity: 'Name collision', title: 'Title mismatch', stale: 'Stale', competitor: 'Competitor',
-  recontact: 'Recently drafted', off_topic: 'Off-topic news',
+  recontact: 'Recently drafted', off_topic: 'Off-topic news', own_role: 'Own-role job post', disputed: 'Models disagree',
 }
 
 export function ago(iso: string) {
