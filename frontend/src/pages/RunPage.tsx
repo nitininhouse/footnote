@@ -13,6 +13,7 @@ const DONE = ['ready', 'ready_with_warnings', 'approved', 'rejected']
 function useRun(id: string) {
   const [run, setRun] = useState<Run | null>(null)
   const [gone, setGone] = useState(false)
+  const [conn, setConn] = useState(0)   // bump to reconnect after the rep answers a question
   useEffect(() => {
     let es: EventSource | null = null
     let stop = false
@@ -24,8 +25,8 @@ function useRun(id: string) {
     }
     open()
     return () => { stop = true; es?.close() }
-  }, [id])
-  return { run, setRun, gone }
+  }, [id, conn])
+  return { run, setRun, gone, reconnect: () => setConn(c => c + 1) }
 }
 
 function Timer({ run }: { run: Run }) {
@@ -37,7 +38,7 @@ function Timer({ run }: { run: Run }) {
 }
 
 export default function RunPage({ id }: { id: string }) {
-  const { run, setRun, gone } = useRun(id)
+  const { run, setRun, gone, reconnect } = useRun(id)
   const [sel, setSel] = useState<string | null>(null)
   if (gone) return <div className="page"><div className="empty">This run doesn't exist. <a href="#/runs">See all runs</a></div></div>
   if (!run) return <div className="page"><div className="empty">Loading…</div></div>
@@ -95,7 +96,7 @@ export default function RunPage({ id }: { id: string }) {
           </div>}
         </div>
         <div>
-          {run.question && run.status === 'needs_input' && <Ask run={run} />}
+          {run.question && run.status === 'needs_input' && <Ask run={run} onAnswered={reconnect} />}
           {run.error && <div className="banner bad"><b>Stopped:</b> {run.error.msg}</div>}
           <StageDetail run={run} k={view} />
         </div>
@@ -105,12 +106,17 @@ export default function RunPage({ id }: { id: string }) {
 }
 
 /* ------------------------------------------------------------------ question */
-function Ask({ run }: { run: Run }) {
+function Ask({ run, onAnswered }: { run: Run; onAnswered: () => void }) {
   const q = run.question!
   const [val, setVal] = useState('')
   const [busy, setBusy] = useState('')
   const [err, setErr] = useState('')
-  const choose = async (o: string) => { setBusy(o); setErr(''); try { await api.answer(run.id, o, val) } catch (e) { setErr((e as Error).message) } finally { setBusy('') } }
+  const choose = async (o: string) => {
+    setBusy(o); setErr('')
+    try { await api.answer(run.id, o, val); onAnswered() }
+    catch (e) { setErr((e as Error).message); onAnswered() }   // either way, show the run's real state
+    finally { setBusy('') }
+  }
   return (
     <div className="ask">
       <p>{q.text}</p>
