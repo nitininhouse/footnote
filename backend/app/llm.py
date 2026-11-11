@@ -11,6 +11,7 @@ import re
 import time
 
 import requests
+from json_repair import repair_json
 
 from . import config
 
@@ -30,10 +31,17 @@ def _json(text):
     a, b = text.find("{"), text.rfind("}")
     if a < 0 or b < a:
         raise LLMError("model returned no JSON")
-    return json.loads(text[a:b + 1])
+    try:
+        return json.loads(text[a:b + 1])
+    except json.JSONDecodeError:
+        # Models sometimes leave an unescaped quote or a trailing comma; fix the syntax, never the content.
+        fixed = repair_json(text[a:b + 1], return_objects=True)
+        if not isinstance(fixed, dict) or not fixed:
+            raise
+        return fixed
 
 
-def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None):
+def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None, required=()):
     """Return (parsed_json, meta). `prefer` picks the first model to try ("gemini" or "deepseek");
     the other is the fallback. meta["model"] says which one actually answered."""
     h = hashlib.sha1(json.dumps([system, prompt, temperature, prefer]).encode()).hexdigest()[:16]
@@ -49,7 +57,7 @@ def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None
         for attempt in range(2):
             t0 = time.time()
             try:
-                r = requests.post(f"{m['base']}/chat/completions", timeout=150,
+                r = requests.post(f"{m['base']}/chat/completions", timeout=120,
                                   headers={"authorization": f"Bearer {m['key']}"},
                                   json={"model": m["name"], "temperature": temperature, "max_tokens": max_tokens,
                                         "response_format": {"type": "json_object"},
@@ -64,7 +72,11 @@ def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None
                     break
                 text = r.json()["choices"][0]["message"]["content"] or ""
                 data = _json(text)
-                f.write_text(json.dumps({"model": m["name"], "data": data, "fallback_reason": "; ".join(errors)}))
+                gone = [k for k in required if not data.get(k)]
+                if gone:
+                    raise LLMError(f"answer was cut off (no {', '.join(gone)})")
+                if not errors:   # a backup answer is not kept: next time the main model gets another chance
+                    f.write_text(json.dumps({"model": m["name"], "data": data}))
                 return data, {"model": m["name"], "cached": False, "ms": int((time.time() - t0) * 1000),
                               "fallback_reason": "; ".join(errors)}
             except (requests.RequestException, ValueError, KeyError, LLMError) as e:

@@ -289,7 +289,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
         <div className="src-list">
           {cites.map(c => {
             const on = hl != null && claimNums[hl]?.includes(c.n)
-            if (c.proof != null) return <div key={c.n} className={`src ${on ? 'hl' : ''}`}><span className="n">{c.n}</span><span><b>Zamp customer result</b><div className="muted">zamp.ai</div></span></div>
+            if (c.proof != null) return <div key={c.n} className={`src ${on ? 'hl' : ''}`}><span className="n">{c.n}</span><span><div>{dr.proofs?.[c.proof] || 'Zamp customer result'}</div><div className="muted">Zamp customer result · <a href="https://zamp.ai" target="_blank" rel="noreferrer">zamp.ai</a></div></span></div>
             const s = c.sig!
             const src = s.sources[0]
             return <div key={c.n} className={`src ${on ? 'hl' : ''}`}><span className="n">{c.n}</span><span>
@@ -363,7 +363,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
         </div> : <div className="muted">No hook was strong enough.</div>}
         {notChosen.length > 0 && <h3 style={{ marginTop: 16 }}>Other options considered</h3>}
         {notChosen.map(s => <div key={s.id} className="rej">
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span><span /></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span>{s.use === 'left out' && <span className="tag bad" style={{ flexShrink: 0 }}>Left out</span>}</div>
           <div className="why">{s.reason}</div>
         </div>)}
         {run.checks.some(c => c.status !== 'pass') && <h3 style={{ marginTop: 16 }}>Flags</h3>}

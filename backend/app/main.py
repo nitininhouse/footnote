@@ -1,7 +1,10 @@
 """HTTP API + the built frontend. One process, one port."""
 import asyncio
 import json
+import shutil
 import statistics
+import time
+from collections import defaultdict
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -12,8 +15,21 @@ from pydantic import BaseModel
 from . import config, crust, pipeline, store
 from .seller import SELLER
 
-app = FastAPI(title="Hookline")
+app = FastAPI(title="Footnote")
 DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+
+# A fresh server (e.g. a new deploy) starts with the recorded example runs so the dashboard isn't empty.
+SEED = Path(__file__).resolve().parents[1] / "seed" / "runs.db"
+if not config.DB.exists() and SEED.exists():
+    config.DATA.mkdir(parents=True, exist_ok=True)
+    shutil.copy(SEED, config.DB)
+
+_visits = defaultdict(list)   # visitor -> start times of their runs today (public demo guard)
+
+
+def visitor(request: Request):
+    fwd = request.headers.get("x-forwarded-for", "")
+    return fwd.split(",")[0].strip() or (request.client.host if request.client else "?")
 
 
 class NewRun(BaseModel):
@@ -56,7 +72,13 @@ def get_config():
 
 
 @app.post("/api/runs")
-def new_run(body: NewRun):
+def new_run(body: NewRun, request: Request):
+    who, now = visitor(request), time.time()
+    _visits[who] = [t for t in _visits[who] if now - t < 86400]
+    if len(_visits[who]) >= config.RUNS_PER_VISITOR:
+        raise HTTPException(429, f"You've researched {config.RUNS_PER_VISITOR} prospects today. Try again tomorrow, "
+                                 "or open one of the existing runs.")
+    _visits[who].append(now)
     mode = body.mode or config.DEFAULT_MODE
     if mode not in ("live", "replay"):
         raise HTTPException(400, "mode must be live or replay")

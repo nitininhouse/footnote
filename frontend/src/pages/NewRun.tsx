@@ -30,7 +30,7 @@ export default function NewRun(_: { cfg: Config | null }) {
       <div className="page-head">
         <div>
           <h1>New prospect</h1>
-          <p className="sub">Name a prospect. Hookline reads their profile and company news, finds the one reason to write now, and drafts an email for you to review.</p>
+          <p className="sub">Name a prospect. Footnote reads their profile and company news, finds the one reason to write now, and drafts an email for you to review.</p>
         </div>
       </div>
       <div className="newrun">

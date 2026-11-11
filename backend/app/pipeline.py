@@ -13,8 +13,9 @@ from datetime import date, datetime
 
 from . import config, llm, store
 from .crust import Client, CrustError
-from .seller import FINANCE_TITLE_WORDS, PLAYBOOK, SELLER
+from .seller import DO_NOT_CONTACT, FINANCE_TITLE_WORDS, PLAYBOOK, SELLER
 
+NUM = re.compile(r"\d[\d,]*(?:\.\d+)?")
 MONEY = re.compile(r"\$\s?(\d+(?:\.\d+)?)\s?(billion|bn|b|million|mn|m)\b", re.I)
 
 
@@ -181,7 +182,6 @@ class Runner:
         if not url and (len(inp["name"].split()) < 2 or not inp["company"]):
             raise Stop("Need a full name and a company, or a LinkedIn profile link.", "blocked")
         self.log(f"Prospect: {inp['name'] or url} at {inp['company'] or '(company from profile)'}")
-        self.log(f"Mode: {self.run['mode']} ({'recorded answers only, no credits' if self.run['mode'] == 'replay' else 'new lookups cost Crustdata credits'})")
         # Recently drafted?
         for r in store.all_runs(200):
             if r["id"] == self.run["id"] or not r.get("person"):
@@ -210,6 +210,15 @@ class Runner:
                        "not_found")
         for c in cands[:5]:
             self.log(f"Match: {c['name']} · {c['domain'] or 'no domain'} · {c['size'] or 'size unknown'}")
+        # Existing customer? Checked before any paid lookup.
+        hit = DO_NOT_CONTACT.get(norm(inp["company"]))
+        if not hit and cands[0].get("domain") in DO_NOT_CONTACT.values():
+            hit = cands[0]["domain"]
+        if hit:
+            self.check("customer", "block", f"{inp['company']} is already a Zamp customer",
+                       "Existing customers go to their account team, not cold outreach. No credits spent.")
+            raise Stop(f"{inp['company']} ({hit}) is already a Zamp customer. Hand this to the account team instead "
+                       "of sending a cold email. No credits were spent.", "blocked")
         if len(cands) > 1:
             self.log(f"{len(cands)} companies share this name; the person's current job will decide which one.", "warn")
             return f"{len(cands)} companies named “{inp['company']}”. Deciding by the person's employer"
@@ -495,7 +504,8 @@ class Runner:
                "Claims are ONLY sentences that state a fact from the brief or a customer result. Do not list questions, "
                "guesses about their work, greetings or the ask.")
         data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(self._brief())}\n\n{ask}",
-                             tag="agent", prefer="gemini", temperature=0.4, max_tokens=8000)
+                             tag="agent", prefer="gemini", temperature=0.4, max_tokens=8000,
+                             required=("subject", "body", "hook"))
         self.log(f"Agent: {meta['model']}{' (cached)' if meta['cached'] else ''}, {meta['ms'] / 1000:.1f} s")
         if meta.get("fallback_reason"):
             self.log(f"Gemini did not answer ({meta['fallback_reason'][:160]}), so {meta['model']} wrote this draft.", "warn")
@@ -506,6 +516,11 @@ class Runner:
                 sig[x["id"]]["use"] = "not chosen"
         for h in hook_ids:
             sig[h]["use"] = "hook"
+        bad = [x for x in data.get("not_chosen") or [] if x.get("id") in sig and str(x.get("reason", "")).lower().startswith("bad news")]
+        for x in bad:
+            sig[x["id"]]["use"] = "left out"
+            self.check("sensitive", "pass", "Bad news found and left out", f"{sig[x['id']].get('label') or sig[x['id']]['text']}", [x["id"]])
+            self.log(f"Left out (bad news): {(sig[x['id']].get('label') or sig[x['id']]['text'])[:90]}", "warn")
         self.run["hook"] = {"ids": hook_ids, "id": hook_ids[0] if hook_ids else None, "why": data.get("why"),
                             "angle": data.get("angle"), "confidence": data.get("confidence"), "model": meta["model"],
                             "not_chosen": [x.get("id") for x in data.get("not_chosen") or [] if x.get("id") in sig],
@@ -538,12 +553,36 @@ class Runner:
             else:
                 c["verdict"] = "uncited"
                 c["reason"] = "Sentence not found in the email (it may have been edited)" if not in_body else "Cited source not found"
+        # Numbers: every number in a factual sentence must appear in what it cites.
+        def nums(t):
+            return {n.replace(",", "").rstrip(".") for n in NUM.findall(t or "")}
+        proof_text = [f"{p['customer']} {p['result']}" for p in SELLER["proof"]]
+        all_src = " ".join([s["text"] + " " + (s.get("excerpt") or "") for s in sig.values()] + proof_text)
+        for c in dr["claims"]:
+            if c["verdict"] != "cited":
+                continue
+            cited = " ".join([sig[f]["text"] + " " + (sig[f].get("excerpt") or "") for f in c["facts"]] +
+                             [proof_text[p] for p in c["proof"]])
+            missing = nums(c["text"]) - nums(cited)
+            if missing:
+                c["verdict"] = "uncited"
+                c["reason"] = f"The number {', '.join(sorted(missing))} is not in the cited source"
+        body_missing = {n for n in nums(dr["body"]) - nums(all_src) if not (len(n) == 4 and n.startswith("20"))}
+        if body_missing:
+            notes.append(f"Number not found in any source: {', '.join(sorted(body_missing))}")
+        low = (dr["subject"] + " " + dr["body"]).lower()
+        hits = [b for b in config.BANNED if b in low]
+        if hits:
+            notes.append("Sales clichés: " + ", ".join(f"“{b}”" for b in hits))
         if dr["words"] > config.MAX_WORDS:
             notes.append(f"{dr['words']} words, longer than {config.MAX_WORDS}")
+        if dr.get("fallback_reason") and not str(dr.get("writer", "")).startswith("gemini"):
+            notes.append(f"Written by the backup model ({dr['writer']}) because Gemini did not answer. Read it carefully")
         if self.run["hook"].get("confidence") == "low" or not self.run["hook"].get("ids"):
             dr["low_personalisation"] = True
             notes.append("The agent found no strong reason to write")
         dr["lint"] = notes
+        dr["proofs"] = [f"{p['customer']} {p['result']}" for p in SELLER["proof"]]
         ok = sum(1 for c in dr["claims"] if c["verdict"] == "cited")
         self.run["outcome"] = "ready" if ok == len(dr["claims"]) and not notes else "ready_with_warnings"
         for c in dr["claims"]:

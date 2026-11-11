@@ -33,6 +33,13 @@ SELLER = {
     "tone": "plain, specific, peer-to-peer; no flattery, no hype, no exclamation marks",
 }
 
+# Accounts that must never get a cold email: existing customers go to their account team.
+# (The named customers from Zamp's site; a real deployment would read this from the CRM.)
+DO_NOT_CONTACT = {
+    "instacart": "instacart.com", "block": "block.xyz", "square": "squareup.com", "amgen": "amgen.com",
+    "uber freight": "uberfreight.com", "mindbody": "mindbodyonline.com", "zamp": "zamp.ai",
+}
+
 FINANCE_TITLE_WORDS = ["Accounts Payable", "Accounting", "Controller", "Finance", "Procurement", "Payments", "Tax"]
 
 
@@ -57,7 +64,8 @@ Pick the single fact that best explains why this person, in this job, would care
   close, acquisitions to integrate, new entities. AP / procurement: invoice and vendor volume, approvals.
 - Recent (under 90 days) and specific beats big and old. If many outlets ran the same story (like a funding round),
   every rep will open with it: skip it or mention it later.
-- Never use bad news (layoffs, lawsuits, deaths, scandals). Read headlines in context.
+- Never use bad news (layoffs, lawsuits, deaths, scandals, losses). Read headlines in context. List every bad-news
+  fact in not_chosen with a reason that starts with "Bad news:", so the rep can see it was found and left out.
 - Never say anything awkward for this reader: not a job post for their own role, not something that reflects badly
   on them, not their personal life.
 - If two sources disagree on a number, don't use the number.
@@ -146,4 +154,6 @@ Worth comparing before you fill the seat?
 </example>
 
 Every fact in your email must come from the brief, and every factual sentence must list the fact ids it uses.
+Write every number exactly as it appears in the fact or customer result you cite (code checks this); never round,
+convert or add a number of your own.
 """

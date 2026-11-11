@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA = Path(os.environ.get("HOOKLINE_DATA", ROOT / "data"))
+DATA = Path(os.environ.get("FOOTNOTE_DATA") or os.environ.get("HOOKLINE_DATA") or (ROOT / "data"))
 CACHE = DATA / "cache"          # every Crustdata answer ever received, keyed by request
 DB = DATA / "runs.db"
 
@@ -25,12 +25,13 @@ DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "").strip()
 
 # "replay": answer only from recorded Crustdata responses (free, can't break in a demo).
 # "live": call Crustdata for anything not recorded yet.
-DEFAULT_MODE = os.environ.get("HOOKLINE_MODE", "replay")
-ACCESS_CODE = os.environ.get("HOOKLINE_ACCESS_CODE", "").strip()   # required for live runs when set
+DEFAULT_MODE = os.environ.get("FOOTNOTE_MODE") or os.environ.get("HOOKLINE_MODE") or "replay"
+ACCESS_CODE = (os.environ.get("FOOTNOTE_ACCESS_CODE") or "").strip()   # required for live runs when set
 
 # Credit guards (Crustdata bills per call, and per result on searches)
 RUN_CREDIT_CAP = float(os.environ.get("RUN_CREDIT_CAP", "6"))
 DAILY_CREDIT_CAP = float(os.environ.get("DAILY_CREDIT_CAP", "40"))
+RUNS_PER_VISITOR = int(os.environ.get("RUNS_PER_VISITOR", "15"))   # new prospects per visitor per day (public demo)
 PEOPLE_PER_SEARCH = 5
 JOBS_PER_SEARCH = 6
 

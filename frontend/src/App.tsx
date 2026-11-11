@@ -42,8 +42,8 @@ export default function App() {
     <div className="shell">
       <aside className="side">
         <div className="brand">
-          <span className="brand-mark"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M3 2v12M3 8h6a4 4 0 0 0 0-8" stroke="#fff" strokeWidth="2.2" fill="none" /></svg></span>
-          <div><div className="brand-name">Hookline</div><div className="brand-sub">Zamp outbound</div></div>
+          <span className="brand-mark"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 14V2h8M4 8h6" stroke="#fff" strokeWidth="2.2" fill="none" /></svg></span>
+          <div><div className="brand-name">Footnote</div><div className="brand-sub">Zamp outbound</div></div>
         </div>
         <a className={on('/')} href="#/"><Ico d="M8 3v10M3 8h10" />New prospect</a>
         <div className="nav-label">Drafts</div>

@@ -51,7 +51,7 @@ export default function Runs({ initialTab }: { initialTab: string }) {
             <thead><tr><th>Prospect</th><th>Reason to write</th><th>Flags</th><th>Status</th><th className="r">Sourced</th><th className="r">Time</th><th className="r">Created</th></tr></thead>
             <tbody>{shown.map(r => <tr key={r.id} className="click" onClick={() => go(`/run/${r.id}`)}>
               <td><div className="cell-person"><span className="avatar">{initials(r.name)}</span><div><div style={{ fontWeight: 500 }}>{r.name?.replace(/,?\s+(CPA|CIA|CISA)\b,?/g, '')}</div><div className="muted" style={{ fontSize: 12.5 }}>{r.title}{r.company ? `, ${r.company}` : ''}</div></div></div></td>
-              <td style={{ maxWidth: 280 }}>{r.hook ? <>{r.hook}</> : <span className="faint">—</span>}</td>
+              <td style={{ maxWidth: 280 }}>{r.hook ? <span className="clamp2" title={r.hook}>{r.hook}</span> : <span className="faint">—</span>}</td>
               <td><div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 220 }}>{r.edge.filter(e => e !== 'off_topic').map(e => <span key={e} className="tag">{EDGE[e] || e}</span>)}</div></td>
               <td><Chip s={r.status} /></td>
               <td className="r mono">{r.claims ? `${r.claims_ok}/${r.claims}` : '—'}</td>

@@ -15,7 +15,7 @@ export type Draft = {
   subject: string; body: string; claims: Claim[]; lint: string[]; words: number; genericness?: number
   genericness_reason?: string; unlisted?: string[]; approve_blocked?: string; edited?: boolean
   original?: { subject: string; body: string }; low_personalisation?: boolean
-  issues?: Issue[]; reviewer?: string; writer?: string; fallback_reason?: string; rounds?: { reviewer: string; independent: boolean; issues: Issue[]; verdict: string; body: string }[]
+  issues?: Issue[]; proofs?: string[]; reviewer?: string; writer?: string; fallback_reason?: string; rounds?: { reviewer: string; independent: boolean; issues: Issue[]; verdict: string; body: string }[]
 }
 export type Check = { kind: string; status: 'pass' | 'warn' | 'block'; title: string; detail: string; signal_ids: string[] }
 export type Question = { kind: string; text: string; options: { id: string; label: string; detail?: string; url?: string; input?: boolean }[] }
@@ -76,7 +76,7 @@ export const STATUS: Record<string, { label: string; tone: string }> = {
 }
 
 export const EDGE: Record<string, string> = {
-  crowded: 'Crowded hook', conflict: 'Sources disagree', anomaly: 'Odd statistic', sensitive: 'Sensitive news',
+  crowded: 'Crowded hook', conflict: 'Sources disagree', anomaly: 'Odd statistic', sensitive: 'Bad news left out', customer: 'Existing customer',
   job_change: 'Job change', identity: 'Name collision', title: 'Title mismatch', stale: 'Stale', competitor: 'Competitor',
   recontact: 'Recently drafted', off_topic: 'Off-topic news', own_role: 'Own-role job post', disputed: 'Models disagree',
 }
