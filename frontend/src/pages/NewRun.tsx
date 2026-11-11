@@ -38,11 +38,11 @@ export default function NewRun({ cfg }: { cfg: Config | null }) {
       <div className="newrun">
         <form className="panel panel-pad" onSubmit={e => { e.preventDefault(); start() }}>
           <div className="form-grid">
-            <div className="field"><label>Full name</label><input className="input" value={f.name} onChange={set('name')} placeholder="Kristin Schaefer" autoFocus /></div>
-            <div className="field"><label>Company</label><input className="input" value={f.company} onChange={set('company')} placeholder="Whatnot" /></div>
-            <div className="field"><label>Title <span className="faint">optional</span></label><input className="input" value={f.title} onChange={set('title')} placeholder="CFO" /></div>
-            <div className="field"><label>LinkedIn profile <span className="faint">optional, skips the name search</span></label><input className="input" value={f.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/in/…" /></div>
-            <div className="field wide"><label>Your notes <span className="faint">optional, never sent to the prospect</span></label><textarea className="textarea" value={f.notes} onChange={set('notes')} placeholder="Met at SaaStr; asked about AP backlog" /></div>
+            <div className="field"><label>Full name</label><input className="input" value={f.name} onChange={set('name')} autoFocus autoComplete="off" /></div>
+            <div className="field"><label>Company</label><input className="input" value={f.company} onChange={set('company')} autoComplete="off" /></div>
+            <div className="field"><label>Title <span className="faint">optional</span></label><input className="input" value={f.title} onChange={set('title')} autoComplete="off" /></div>
+            <div className="field"><label>LinkedIn profile link <span className="faint">optional</span></label><input className="input" value={f.linkedin} onChange={set('linkedin')} autoComplete="off" /><span className="hint">Use it when the name is common. It skips the name search.</span></div>
+            <div className="field wide"><label>Your notes <span className="faint">optional</span></label><textarea className="textarea" value={f.notes} onChange={set('notes')} /><span className="hint">For your own context, like where you met. Never sent to the prospect.</span></div>
           </div>
           <div className="divider" />
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -60,11 +60,12 @@ export default function NewRun({ cfg }: { cfg: Config | null }) {
         </form>
 
         <div style={{ display: 'grid', gap: 16 }}>
-          <div className="panel">
-            <div style={{ padding: '12px 12px 4px' }}><h3>Prepared prospects</h3></div>
+          <div className="panel panel-pad">
+            <h3>Demo examples</h3>
+            <p className="muted" style={{ fontSize: 12.5, margin: '0 0 8px' }}>Real people, recorded answers. Clicking one fills the form; nothing runs until you press the button.</p>
             {SAMPLES.map(s => (
-              <button key={s.company} className="sample" onClick={() => { setF({ ...f, ...s, linkedin: '', notes: '' }); start({ ...s, linkedin: '', notes: '' }) }}>
-                <b>{s.name} · {s.company}</b><span className="tag">{s.title}</span>
+              <button key={s.company} type="button" className="example" onClick={() => setF({ name: s.name, company: s.company, title: s.title, linkedin: '', notes: '' })}>
+                <span><b>{s.name}</b>, {s.company}</span>
                 <span className="what">{s.what}</span>
               </button>
             ))}
