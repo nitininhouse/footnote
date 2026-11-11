@@ -364,7 +364,10 @@ class Runner:
         return {
             "name": (c.get("basic_info") or {}).get("name"),
             "domain": (c.get("basic_info") or {}).get("primary_domain"),
-            "description": ((c.get("basic_info") or {}).get("description") or "")[:400],
+            "description": ((c.get("basic_info") or {}).get("description") or "")[:600],
+            "country": h.get("largest_headcount_country"),
+            "company_type": (c.get("basic_info") or {}).get("company_type"),
+            "revenue_usd": [((c.get("revenue") or {}).get("estimated") or {}).get(k) for k in ("lower_bound_usd", "upper_bound_usd")],
             "headcount": h.get("total"),
             "headcount_yoy": (h.get("growth_percent") or {}).get("yoy"),
             "last_round": {"type": (last.get("round_type") or "").replace("_", " ").title(),
@@ -470,7 +473,9 @@ class Runner:
             "prospect": {"name": pr["name"], "title": pr["title"], "company": co["name"],
                          "in_role_since": (pr.get("start") or "")[:7], "days_in_role": pr.get("tenure_days"),
                          "headline": pr.get("headline")},
-            "company": {"name": co["name"], "description": cs.get("description")},
+            "company": {"name": co["name"], "what_it_does": cs.get("description"), "main_country": cs.get("country"),
+                        "ownership": cs.get("company_type"), "estimated_revenue_usd": cs.get("revenue_usd"),
+                        "employees": cs.get("headcount")},
             "rep_notes": self.run["input"].get("notes") or None,
             "facts": facts,
             "zamp_customer_results": [{"i": i, "customer": p["customer"], "result": p["result"]} for i, p in enumerate(SELLER["proof"])],
@@ -486,7 +491,9 @@ class Runner:
                '"not_chosen": [{"id", "reason"}] for the 5 strongest alternatives, '
                '"confidence": "high"|"medium"|"low", '
                '"subject": str, "body": str, '
-               '"claims": [{"text": exact sentence from the body, "facts": [fact ids], "proof": [customer result i]}]}')
+               '"claims": [{"text": exact sentence from the body, "facts": [fact ids], "proof": [customer result i]}]}. '
+               "Claims are ONLY sentences that state a fact from the brief or a customer result. Do not list questions, "
+               "guesses about their work, greetings or the ask.")
         data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(self._brief())}\n\n{ask}",
                              tag="agent", prefer="gemini", temperature=0.4, max_tokens=8000)
         self.log(f"Agent: {meta['model']}{' (cached)' if meta['cached'] else ''}, {meta['ms'] / 1000:.1f} s")
@@ -520,6 +527,7 @@ class Runner:
         sig = {s["id"]: s for s in self.run["signals"]}
         dr = self.run["draft"]
         notes = []
+        dr["claims"] = [c for c in dr["claims"] if c.get("facts") or c.get("proof")]   # facts only
         for c in dr["claims"]:
             known = [f for f in c.get("facts", []) if f in sig]
             proof = [p for p in c.get("proof", []) if isinstance(p, int) and 0 <= p < len(SELLER["proof"])]
@@ -529,7 +537,7 @@ class Runner:
                 c["verdict"], c["reason"] = "cited", "Cites " + ", ".join(known + [f"Zamp result {p + 1}" for p in proof])
             else:
                 c["verdict"] = "uncited"
-                c["reason"] = "Sentence not found in the email" if not in_body else "No source cited"
+                c["reason"] = "Sentence not found in the email (it may have been edited)" if not in_body else "Cited source not found"
         if dr["words"] > config.MAX_WORDS:
             notes.append(f"{dr['words']} words, longer than {config.MAX_WORDS}")
         if self.run["hook"].get("confidence") == "low" or not self.run["hook"].get("ids"):

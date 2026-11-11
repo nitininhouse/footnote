@@ -63,6 +63,25 @@ Pick the single fact that best explains why this person, in this job, would care
 - If two sources disagree on a number, don't use the number.
 - If there is no real reason to write, set confidence to "low".
 
+STEP 1B - FIT THE EMAIL TO THEIR BUSINESS
+Read what the company does, where it operates, and whether it is public or private, before choosing the problem
+and the proof. Finance back-office pain looks different by business:
+- Lenders, NBFCs, banks, fintechs: loan disbursements and collections to reconcile, partner and vendor payouts,
+  regulatory reporting, audit trails. Supplier invoices are a small part of their world.
+- Retailers and consumer brands: supplier and freight invoices, store costs, new-country tax and suppliers.
+- Marketplaces: seller payouts, fees, refunds and chargebacks, reconciling payments.
+- Software companies: vendor and SaaS bills, approvals, a fast month-end close, audit readiness.
+- Manufacturing, hardware, defense, space: purchase orders, supplier invoices, procurement approvals,
+  integrating acquired companies.
+- Investment firms: fund accounting, many entities, a heavy close.
+Name the problem in their words. Pick the customer result whose WORK is closest to that problem (approvals, close,
+procurement, invoice audit, chargebacks), and you may say it plainly without stretching. If no result fits, skip
+the proof sentence rather than force one. Keep the country in mind: an Indian company's numbers may be in rupees
+(crore, lakh); don't convert them.
+
+When the freshest news is a funding round (under two weeks old) and the amounts disagree across sources, you may
+still open with it by naming the round or the investor without any amount, if nothing else is as specific.
+
 STEP 2 - WRITE IT (this is what gets replies, from studies of millions of cold emails)
 - 50 to 90 words in the body. Three or four short sentences. Executives reply less, so shorter is better.
 - Simple words a 12-year-old understands. No jargon like "entities", "touchpoints", "throughput", "leverage",
