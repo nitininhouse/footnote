@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, ago, EDGE, secs, type Row, type Stats } from '../api'
 import { go } from '../App'
-import { Chip } from './bits'
+import { Chip, initials } from './bits'
 
 const TABS: [string, string, (r: Row) => boolean][] = [
   ['all', 'All', () => true],
@@ -29,35 +29,33 @@ export default function Runs({ initialTab }: { initialTab: string }) {
   return (
     <div className="page">
       <div className="page-head">
-        <div><h1>{tab === 'review' ? 'Review queue' : 'All runs'}</h1><p className="sub">Every prospect researched, what was found and what happened to the draft.</p></div>
+        <div><h1>{tab === 'review' ? 'Review queue' : 'All prospects'}</h1><p className="sub">Everyone you've researched and where each draft stands.</p></div>
         <button className="btn primary" onClick={() => go('/')}>New prospect</button>
       </div>
       {stats && <div className="stats">
-        <div className="stat"><div className="v">{stats.runs}</div><div className="l">Runs</div></div>
-        <div className="stat"><div className="v">{stats.awaiting}</div><div className="l">Waiting on you</div></div>
-        <div className="stat"><div className="v">{pct(stats.approval_rate)}</div><div className="l">Approved of reviewed</div></div>
-        <div className="stat"><div className="v">{pct(stats.claim_pass)}</div><div className="l">Claims verified</div></div>
-        <div className="stat"><div className="v">{stats.median_ms ? secs(stats.median_ms) : '—'}</div><div className="l">Median time to draft</div></div>
-        <div className="stat"><div className="v">{stats.credits.toFixed(2)}</div><div className="l">Credits spent</div></div>
+        <div className="stat"><div className="l">Prospects researched</div><div className="v">{stats.runs}</div></div>
+        <div className="stat"><div className="l">Waiting on you</div><div className="v">{stats.awaiting}</div></div>
+        <div className="stat"><div className="l">Approval rate</div><div className="v">{pct(stats.approval_rate)}</div></div>
+        <div className="stat"><div className="l">Sentences with a source</div><div className="v">{pct(stats.claim_pass)}</div></div>
+        <div className="stat"><div className="l">Median time to draft</div><div className="v">{stats.median_ms ? secs(stats.median_ms) : '—'}</div></div>
       </div>}
+      <div className="toolbar">
       <div className="tabs">
         {TABS.map(([k, l, fn]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{l}<span className="c">{(rows || []).filter(fn).length}</span></button>)}
       </div>
-      <div className="toolbar">
-        <input className="input" style={{ maxWidth: 280 }} placeholder="Search name, company or hook" value={q} onChange={e => setQ(e.target.value)} />
+        <input className="input" style={{ maxWidth: 260 }} aria-label="Search" placeholder="Search" value={q} onChange={e => setQ(e.target.value)} />
       </div>
       <div className="panel">
         {rows && shown.length === 0 ? <div className="empty">{rows.length === 0 ? <>No runs yet. <a href="#/">Research your first prospect</a>.</> : 'Nothing here.'}</div> :
           <table className="tbl">
-            <thead><tr><th>Prospect</th><th>Hook</th><th>Edge cases hit</th><th>Status</th><th className="r">Claims</th><th className="r">Time</th><th className="r">Credits</th><th className="r">Started</th></tr></thead>
+            <thead><tr><th>Prospect</th><th>Reason to write</th><th>Flags</th><th>Status</th><th className="r">Sourced</th><th className="r">Time</th><th className="r">Created</th></tr></thead>
             <tbody>{shown.map(r => <tr key={r.id} className="click" onClick={() => go(`/run/${r.id}`)}>
-              <td><b>{r.name}</b><div className="muted" style={{ fontSize: 12.5 }}>{r.title}{r.company ? `, ${r.company}` : ''}</div></td>
-              <td style={{ maxWidth: 280 }}>{r.hook ? <>{r.hook}{r.hook_kind && <div><span className="tag">{r.hook_kind.replace('_', ' ')}</span></div>}</> : <span className="faint">—</span>}</td>
+              <td><div className="cell-person"><span className="avatar">{initials(r.name)}</span><div><div style={{ fontWeight: 500 }}>{r.name?.replace(/,?\s+(CPA|CIA|CISA)\b,?/g, '')}</div><div className="muted" style={{ fontSize: 12.5 }}>{r.title}{r.company ? `, ${r.company}` : ''}</div></div></div></td>
+              <td style={{ maxWidth: 280 }}>{r.hook ? <>{r.hook}</> : <span className="faint">—</span>}</td>
               <td><div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 220 }}>{r.edge.filter(e => e !== 'off_topic').map(e => <span key={e} className="tag">{EDGE[e] || e}</span>)}</div></td>
               <td><Chip s={r.status} /></td>
               <td className="r mono">{r.claims ? `${r.claims_ok}/${r.claims}` : '—'}</td>
               <td className="r mono">{secs(r.ms)}</td>
-              <td className="r mono">{r.credits.toFixed(2)}</td>
               <td className="r muted">{ago(r.created)}</td>
             </tr>)}</tbody>
           </table>}

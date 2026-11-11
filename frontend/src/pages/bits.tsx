@@ -17,3 +17,7 @@ export function host(u: string | null | undefined) {
   if (!u) return ''
   try { return new URL(u).hostname.replace(/^www\./, '') } catch { return '' }
 }
+
+export function initials(name: string | null | undefined) {
+  return (name || '?').split(/\s+/).filter(w => /^[A-Za-z]/.test(w) && !/^(CPA|CIA|CISA|MBA|CFA)[,.]?$/.test(w)).slice(0, 2).map(w => w[0].toUpperCase()).join('')
+}

@@ -16,6 +16,10 @@ function useHash() {
 
 export const go = (p: string) => { location.hash = p }
 
+function Ico({ d }: { d: string }) {
+  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
+}
+
 export default function App() {
   const path = useHash()
   const [cfg, setCfg] = useState<Config | null>(null)
@@ -38,16 +42,16 @@ export default function App() {
     <div className="shell">
       <aside className="side">
         <div className="brand">
-          <span className="brand-mark"><svg width="10" height="10" viewBox="0 0 16 16"><path d="M3 2v12M3 8h6a4 4 0 0 0 0-8" stroke="#FAF9F7" strokeWidth="2.2" fill="none" /></svg></span>
-          Hookline
+          <span className="brand-mark"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M3 2v12M3 8h6a4 4 0 0 0 0-8" stroke="#fff" strokeWidth="2.2" fill="none" /></svg></span>
+          <div><div className="brand-name">Hookline</div><div className="brand-sub">Zamp outbound</div></div>
         </div>
-        <a className={on('/')} href="#/">New prospect</a>
-        <a className={on('/runs/review')} href="#/runs/review">Review queue <span className="count">{queue || ''}</span></a>
-        <a className={on('/runs')} href="#/runs">All runs</a>
+        <a className={on('/')} href="#/"><Ico d="M8 3v10M3 8h10" />New prospect</a>
+        <div className="nav-label">Drafts</div>
+        <a className={on('/runs/review')} href="#/runs/review"><Ico d="M2.5 4.5h11v7h-11zM2.5 4.5l5.5 4 5.5-4" />Review queue {queue > 0 && <span className="count">{queue}</span>}</a>
+        <a className={on('/runs')} href="#/runs"><Ico d="M3 4h10M3 8h10M3 12h10" />All prospects</a>
         <div className="side-foot">
-          <span>Selling for <b>{cfg?.seller ?? 'Zamp'}</b></span>
-          {cfg && <span className="mono">{cfg.spent_today.toFixed(2)} / {cfg.daily_cap} credits today</span>}
-          <span>Nothing is sent from here.</span>
+          <span className="avatar">NG</span>
+          <div style={{ lineHeight: 1.3 }}><div style={{ fontWeight: 500, fontSize: 13.5 }}>Nitin Gupta</div><div className="muted" style={{ fontSize: 12 }}>Sales development</div></div>
         </div>
       </aside>
       <main className="main">{page}</main>

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, EDGE, secs, type Claim, type Run, type Signal } from '../api'
-import { Chip, Icon, host } from './bits'
+import { Chip, Icon, host, initials } from './bits'
+
+const cleanName = (n: string | null | undefined) => (n || '').replace(/,?\s+(CPA|CIA|CISA|MBA|CFA)\b,?/g, '').trim()
 
 const ALL_STAGES = [
   ['intake', 'Check the request'], ['company', 'Find the company'], ['person', 'Confirm the person'],
@@ -51,19 +53,20 @@ export default function RunPage({ id }: { id: string }) {
   return (
     <div className="page">
       <div className="run-head">
-        <div>
-          <div className="who">{p?.name || run.input.name || 'Prospect'}</div>
+        <div className="run-who">
+          <span className="avatar lg">{initials(cleanName(p?.name || run.input.name))}</span>
+          <div>
+          <div className="who">{cleanName(p?.name || run.input.name) || 'Prospect'}</div>
           <div className="run-meta">
             <span>{p?.title || run.input.title}{(run.company?.name || run.input.company) && <> at <b style={{ color: 'var(--ink)' }}>{run.company?.name || run.input.company}</b></>}</span>
             {p?.tenure_days != null && <span>{p.tenure_days} days in role</span>}
-            {p?.url && <a href={p.url} target="_blank" rel="noreferrer">LinkedIn ↗</a>}
+            {p?.url && <a href={p.url} target="_blank" rel="noreferrer">LinkedIn</a>}
+          </div>
           </div>
         </div>
         <div className="run-meta">
+          {run.status === 'running' && <Timer run={run} />}
           <Chip s={run.status} />
-          <span className={`tag ${run.mode === 'live' ? 'warn' : ''}`}>{run.mode}</span>
-          <Timer run={run} />
-          <span className="mono" title="Crustdata credits spent by this run">{run.credits.toFixed(2)} cr</span>
         </div>
       </div>
       {run.note && <div className="banner ok">{run.note}</div>}
@@ -71,7 +74,7 @@ export default function RunPage({ id }: { id: string }) {
       {view === 'review' && run.draft ? <>
         <div className="processbar">
           <span className="steps">{ALL_STAGES.map(([k, t]) => <span key={k} title={`${t}: ${byKey[k]?.summary || ''}`}><Icon status={byKey[k]?.status ?? 'pending'} /></span>)}</span>
-          <span className="muted">{run.stages.filter(s => s.status === 'done').length} of {ALL_STAGES.length} steps · {run.signals.length} signals · {run.checks.filter(c => c.status !== 'pass').length} checks fired</span>
+          <span className="muted">Research complete · {run.signals.length} facts read</span>
           <button className="btn sm" style={{ marginLeft: 'auto' }} onClick={() => setSel(active ?? 'intake')}>View the process</button>
         </div>
         <Review run={run} setRun={setRun} />
@@ -155,7 +158,7 @@ function StageDetail({ run, k }: { run: Run; k: string | undefined }) {
           <dt>Now</dt><dd>{run.person.title} at {run.company?.name}, since {run.person.start?.slice(0, 7)}</dd>
           <dt>Headline</dt><dd>{run.person.headline}</dd>
           <dt>Location</dt><dd>{run.person.location || '—'}</dd>
-          <dt>Before</dt><dd>{run.person.past.slice(0, 4).map((j, i) => <div key={i}>{j.title} at {j.company} <span className="faint mono">{j.start?.slice(0, 4)}–{j.end?.slice(0, 4)}</span></div>)}</dd>
+          <dt>Before</dt><dd>{run.person.past.slice(0, 4).map((j, i) => <div key={i}>{j.title} at {j.company} <span className="faint">{j.start?.slice(0, 4)}–{j.end?.slice(0, 4)}</span></div>)}</dd>
         </dl>
       </div>}
       {(k === 'signals' || k === 'hook') && run.signals.length > 0 && <Signals run={run} />}
@@ -282,7 +285,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
     <div className="review">
       {/* sources */}
       <div className="panel">
-        <div className="panel-pad" style={{ paddingBottom: 6 }}><h2>Sources</h2></div>
+        <div className="panel-head" style={{ paddingBottom: 8 }}><h2 style={{ margin: 0 }}>Sources</h2></div>
         <div className="src-list">
           {cites.map(c => {
             const on = hl != null && claimNums[hl]?.includes(c.n)
@@ -291,7 +294,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
             const src = s.sources[0]
             return <div key={c.n} className={`src ${on ? 'hl' : ''}`}><span className="n">{c.n}</span><span>
               <div>{s.label || s.text}</div>
-              <div className="muted">{src?.url ? <a href={src.url} target="_blank" rel="noreferrer">{host(src.url) || src.label} ↗</a> : src?.label}
+              <div className="muted">{src?.url ? <a href={src.url} target="_blank" rel="noreferrer">{host(src.url) || src.label}</a> : src?.label}
                 {s.sources.length > 1 && <> +{s.sources.length - 1} more</>}{s.date && <span className="mono"> · {s.date.slice(0, 10)}</span>}</div>
             </span></div>
           })}
@@ -308,7 +311,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
         {run.status === 'rejected' && <div className="banner warn">Rejected{run.review?.reason ? `: ${run.review.reason}` : ''}.</div>}
         <div className="email">
           <div className="email-head">
-            <span className="k">To</span><span>{run.person?.name} <span className="faint">· {run.person?.title}, {run.company?.name}</span></span>
+            <span className="k">To</span><span>{cleanName(run.person?.name)} <span className="faint">· {run.person?.title}, {run.company?.name}</span></span>
             <span className="k">Subject</span>
             {edit ? <input className="subject-edit" value={subj} onChange={e => setSubj(e.target.value)} /> : <span>{dr.subject}</span>}
           </div>
@@ -330,14 +333,14 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
               <button className="btn primary" disabled={!!dr.approve_blocked} onClick={() => act('approve')}>Approve <span className="kbd">A</span></button>
               <button className="btn" onClick={() => setEdit(true)}>Edit <span className="kbd">E</span></button>
               <button className="btn" onClick={() => setRejecting(true)}>Reject <span className="kbd">R</span></button>
-              <span className="muted" style={{ marginLeft: 'auto', fontSize: 12.5 }}>{dr.words} words · confidence {run.hook?.confidence ?? '–'}</span>
+              <span className="muted" style={{ marginLeft: 'auto', fontSize: 13 }}>{dr.words} words</span>
             </>}
           </div>
         </div>
         {err && <div className="banner bad" style={{ marginTop: 10 }}>{err}</div>}
         <div className="panel panel-pad" style={{ marginTop: 16 }}>
           <h2>Citations</h2>
-          <p className="muted" style={{ fontSize: 12.5, margin: '-4px 0 8px' }}>Written by {dr.writer}. Each factual sentence points to the Crustdata fact it came from; hover a sentence to see its source on the left.</p>
+          <p className="muted" style={{ fontSize: 13, margin: '-4px 0 8px' }}>Every factual sentence points to where it came from. Hover a sentence to see its source.</p>
           {dr.claims.map((c, i) => <div className="check" key={i} onMouseEnter={() => setHl(i)} onMouseLeave={() => setHl(null)}>
             <span><span className={`tag ${c.removed ? '' : c.verdict === 'cited' ? 'ok' : 'warn'}`}>{c.removed ? 'removed' : c.verdict}</span></span>
             <span>“{c.text}”<div className="d">{c.reason} {claimNums[i].length > 0 && <span className="mono">[{claimNums[i].join(', ')}]</span>}</div></span>
@@ -356,14 +359,14 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
           {hooks.map(h => <div key={h.id} style={{ fontWeight: 500 }}>{h.label || h.text}</div>)}
           {run.hook?.angle && <div className="muted" style={{ fontSize: 13, margin: '6px 0' }}>{run.hook.angle}</div>}
           {run.hook?.why && <div style={{ fontSize: 13 }}>{run.hook.why}</div>}
-          <div className="faint" style={{ fontSize: 12, marginTop: 6 }}>Chosen by {run.hook?.model} · confidence {run.hook?.confidence}</div>
+          <div className="faint" style={{ fontSize: 12.5, marginTop: 8 }}>Confidence: {run.hook?.confidence}</div>
         </div> : <div className="muted">No hook was strong enough.</div>}
-        <h3 style={{ marginTop: 16 }}>Not chosen</h3>
+        {notChosen.length > 0 && <h3 style={{ marginTop: 16 }}>Other options considered</h3>}
         {notChosen.map(s => <div key={s.id} className="rej">
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span><span className="mono faint">{s.id}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span><span /></div>
           <div className="why">{s.reason}</div>
         </div>)}
-        <h3 style={{ marginTop: 16 }}>Checks that fired</h3>
+        {run.checks.some(c => c.status !== 'pass') && <h3 style={{ marginTop: 16 }}>Flags</h3>}
         {run.checks.filter(c => c.status !== 'pass' || c.kind === 'identity').slice(0, 8).map((c, i) =>
           <div key={i} className="rej"><span className={`tag ${c.status === 'block' ? 'bad' : c.status === 'warn' ? 'warn' : 'ok'}`}>{EDGE[c.kind] || c.kind}</span> <span className="why">{c.title}</span></div>)}
       </div>

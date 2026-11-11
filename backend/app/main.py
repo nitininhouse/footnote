@@ -82,7 +82,7 @@ def list_runs():
                      "company": (r.get("company") or {}).get("name") or r["input"].get("company"),
                      "hook": (hook or {}).get("label") or ((hook or {}).get("text") or "")[:80] or None,
                      "hook_kind": (hook or {}).get("event_type") or (hook or {}).get("kind"),
-                     "claims_ok": sum(1 for c in claims if c.get("verdict") == "supported"),
+                     "claims_ok": sum(1 for c in claims if c.get("verdict") in ("supported", "cited")),
                      "claims": len(claims), "credits": r.get("credits", 0), "ms": dur,
                      "edge": sorted({c["kind"] for c in r.get("checks", []) if c["status"] != "pass"}),
                      "reviewer": (r.get("review") or {}).get("reviewer"),
@@ -104,7 +104,7 @@ def stats():
             "approval_rate": (sum(1 for r in reviewed if r["status"] == "approved") / len(reviewed)) if reviewed else None,
             "edit_rate": (len(edited) / max(1, sum(1 for r in runs if r["status"] == "approved"))) if reviewed else None,
             "median_ms": statistics.median(durs) if durs else None,
-            "claim_pass": (sum(1 for c in claims if c.get("verdict") == "supported") / len(claims)) if claims else None,
+            "claim_pass": (sum(1 for c in claims if c.get("verdict") in ("supported", "cited")) / len(claims)) if claims else None,
             "credits": round(sum(r.get("credits", 0) for r in runs), 2)}
 
 
