@@ -5,8 +5,7 @@ import { Chip, Icon, host } from './bits'
 const ALL_STAGES = [
   ['intake', 'Check the request'], ['company', 'Find the company'], ['person', 'Confirm the person'],
   ['profile', 'Read their profile'], ['company_data', 'Read company data'], ['roles', 'Scan open roles'],
-  ['signals', 'Turn data into signals'], ['guards', 'Run the safety checks'], ['hook', 'Pick the hook'],
-  ['draft', 'Write the draft'], ['factcheck', 'Fact-check every claim'],
+  ['signals', 'Number every fact'], ['hook', 'Agent: choose the hook and write'], ['factcheck', 'Check the citations'],
 ]
 const DONE = ['ready', 'ready_with_warnings', 'approved', 'rejected']
 
@@ -276,8 +275,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
 
   const hookIds = run.hook?.ids ?? (run.hook?.id ? [run.hook.id] : [])
   const hooks = hookIds.map(i => sigs[i]).filter(Boolean)
-  const rejected = run.signals.filter(s => !hookIds.includes(s.id) && !s.flags.includes('off_topic') && s.kind !== 'background')
-    .sort((a, b) => (b.fit ?? 0) - (a.fit ?? 0)).slice(0, 6)
+  const notChosen = ((run.hook as { not_chosen?: string[] } | null)?.not_chosen ?? []).map(i => sigs[i]).filter(Boolean)
   const verdictTone = (c: Claim) => c.removed ? '' : c.verdict || 'unsupported'
 
   return (
@@ -331,21 +329,21 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
               <button className="btn primary" disabled={!!dr.approve_blocked} onClick={() => act('approve')}>Approve <span className="kbd">A</span></button>
               <button className="btn" onClick={() => setEdit(true)}>Edit <span className="kbd">E</span></button>
               <button className="btn" onClick={() => setRejecting(true)}>Reject <span className="kbd">R</span></button>
-              <span className="muted" style={{ marginLeft: 'auto', fontSize: 12.5 }}>{dr.words} words · generic {dr.genericness ?? '–'}/5</span>
+              <span className="muted" style={{ marginLeft: 'auto', fontSize: 12.5 }}>{dr.words} words · confidence {run.hook?.confidence ?? '–'}</span>
             </>}
           </div>
         </div>
         {err && <div className="banner bad" style={{ marginTop: 10 }}>{err}</div>}
         <div className="panel panel-pad" style={{ marginTop: 16 }}>
-          <h2>Independent review</h2>
-          <p className="muted" style={{ fontSize: 12.5, margin: '-4px 0 8px' }}>Written by {dr.writer}, checked by {dr.reviewer}{dr.reviewer === dr.writer ? ' (same model: not independent)' : ', a different model that did not see the writer\'s reasoning'}{(dr.rounds?.length ?? 0) > 1 ? `. Rewritten once after the first review.` : '.'}</p>
+          <h2>Citations</h2>
+          <p className="muted" style={{ fontSize: 12.5, margin: '-4px 0 8px' }}>Written by {dr.writer}. Each factual sentence points to the Crustdata fact it came from; hover a sentence to see its source on the left.</p>
           {dr.claims.map((c, i) => <div className="check" key={i} onMouseEnter={() => setHl(i)} onMouseLeave={() => setHl(null)}>
-            <span><span className={`tag ${c.removed ? '' : c.verdict === 'supported' ? 'ok' : c.verdict === 'partly' ? 'warn' : 'bad'}`}>{c.removed ? 'removed' : c.verdict}</span></span>
+            <span><span className={`tag ${c.removed ? '' : c.verdict === 'cited' ? 'ok' : 'warn'}`}>{c.removed ? 'removed' : c.verdict}</span></span>
             <span>“{c.text}”<div className="d">{c.reason} {claimNums[i].length > 0 && <span className="mono">[{claimNums[i].join(', ')}]</span>}</div></span>
           </div>)}
           {(dr.unlisted || []).map((u, i) => <div className="check" key={'u' + i}><span><span className="tag bad">no source</span></span><span>“{u}”</span></div>)}
           {(dr.issues || []).map((x, i) => <div className="check" key={'i' + i}><span><span className={`tag ${x.severity === 'block' ? 'bad' : 'warn'}`}>{x.severity === 'block' ? 'must fix' : 'note'}</span></span><span>{x.problem}{x.sentence && <div className="d">“{x.sentence}”</div>}</span></div>)}
-          {dr.lint?.length > 0 && <div className="check"><span><span className="tag warn">style</span></span><span>{dr.lint.join('; ')}</span></div>}
+          {dr.lint?.length > 0 && <div className="check"><span><span className="tag warn">note</span></span><span>{dr.lint.join('; ')}</span></div>}
           {dr.original && <details style={{ marginTop: 10 }}><summary className="muted" style={{ cursor: 'pointer' }}>Original draft before edits</summary><div className="email-body" style={{ padding: '10px 0 0', fontSize: 14 }}>{dr.original.body}</div></details>}
         </div>
       </div>
@@ -360,9 +358,9 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
           <div className="faint" style={{ fontSize: 12, marginTop: 6 }}>Chosen by {run.hook?.model} · confidence {run.hook?.confidence}</div>
         </div> : <div className="muted">No hook was strong enough.</div>}
         <h3 style={{ marginTop: 16 }}>Not chosen</h3>
-        {rejected.map(s => <div key={s.id} className="rej">
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span><span className="mono faint">{s.fit != null ? `${s.fit}/5` : ''}</span></div>
-          <div className="why">{s.reason || s.flags.join(', ')}</div>
+        {notChosen.map(s => <div key={s.id} className="rej">
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span><span className="mono faint">{s.id}</span></div>
+          <div className="why">{s.reason}</div>
         </div>)}
         <h3 style={{ marginTop: 16 }}>Checks that fired</h3>
         {run.checks.filter(c => c.status !== 'pass' || c.kind === 'identity').slice(0, 8).map((c, i) =>

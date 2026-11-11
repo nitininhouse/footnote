@@ -151,8 +151,9 @@ h3 { font-size: 12px; font-weight: 500; color: var(--muted); margin: 0 0 8px; }
 .email-head .k { color: var(--faint); }
 .email-body { padding: 20px 24px 24px; font: 16px/1.65 var(--serif); max-width: 66ch; white-space: pre-wrap; }
 .email-body .claim { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: pointer; }
-.email-body .claim.supported { text-decoration-color: #9CC9AE; }
+.email-body .claim.supported, .email-body .claim.cited { text-decoration-color: #9CC9AE; }
 .email-body .claim.partly { text-decoration-color: #E2B370; }
+.email-body .claim.uncited { text-decoration-color: #E2B370; }
 .email-body .claim.unsupported { text-decoration-color: var(--bad); background: var(--bad-fill); }
 .email-body .claim.hl { background: var(--accent-fill); }
 .email-body sup { font: 500 10.5px var(--mono); color: var(--accent); margin-left: 1px; }

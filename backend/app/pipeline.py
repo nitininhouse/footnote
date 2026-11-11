@@ -13,7 +13,7 @@ from datetime import date, datetime
 
 from . import config, llm, store
 from .crust import Client, CrustError
-from .seller import FINANCE_TITLE_WORDS, PLAYBOOK, REVIEWER, SELLER
+from .seller import FINANCE_TITLE_WORDS, PLAYBOOK, SELLER
 
 MONEY = re.compile(r"\$\s?(\d+(?:\.\d+)?)\s?(billion|bn|b|million|mn|m)\b", re.I)
 
@@ -96,11 +96,9 @@ class Runner:
         ("profile", "Read their profile"),
         ("company_data", "Read company data"),
         ("roles", "Scan open roles"),
-        ("signals", "Turn data into signals"),
-        ("guards", "Run the safety checks"),
-        ("hook", "Choose the hook"),
-        ("draft", "Write the draft"),
-        ("factcheck", "Independent review"),
+        ("signals", "Number every fact"),
+        ("hook", "Agent: choose the hook and write"),
+        ("factcheck", "Check the citations"),
     ]
 
     def __init__(self, run):
@@ -394,7 +392,7 @@ class Runner:
             self.log(f"{(j.get('metadata') or {}).get('date_added', '')[:10]} · {j['job_details']['title']}")
         return f"{len(kept)} relevant roles ({len(dropped)} ignored)"
 
-    # ---------------------------------------------------------------- signals
+    # ---------------------------------------------------------------- facts (code only: number every Crustdata fact)
     def s_signals(self):
         sig, pr, co = [], self.run["person"], self.run["company"]
         cs = self.run["company_data"]
@@ -410,403 +408,136 @@ class Runner:
             add(kind="new_role", about="person", date=pr["start"][:10],
                 text=f"{pr['name']} became {pr['title']} at {co['name']} in {month(d(pr['start']))} ({pr['tenure_days']} days ago).",
                 sources=[{"label": "LinkedIn profile (via Crustdata)", "url": pr["url"]}])
-        for j in pr["past"][:4]:
-            if j["company"] and any(w in norm(j["title"]) for w in ("cfo", "chief financial", "finance", "controller", "accounting", "founder", "ceo", "coo")):
+        for j in pr["past"][:5]:
+            if j["company"]:
                 add(kind="background", about="person", date=(j["end"] or "")[:10] or None,
                     text=f"Previously {j['title']} at {j['company']} ({(j['start'] or '')[:4]}–{(j['end'] or '')[:4] or 'now'})"
-                         + (f": “{j['description'][:160]}”" if j["description"] else "."),
+                         + (f": “{j['description'][:200]}”" if j["description"] else "."),
                     sources=[{"label": "LinkedIn profile (via Crustdata)", "url": pr["url"]}])
         if cs["last_round"] and cs["last_round"]["date"]:
             lr = cs["last_round"]
-            add(kind="funding", about="company", date=lr["date"], amount=lr["amount"],
+            add(kind="funding", about="company", date=lr["date"],
                 text=f"{co['name']} raised a {lr['type']}" + (f" of {fmt_usd(lr['amount'])}" if lr["amount"] else "")
                      + f" on {lr['date']}" + (f", led by {lr['investors']}" if lr.get("investors") else "") + ".",
                 sources=[{"label": "Crustdata funding record", "url": None}])
-        if cs["headcount"] and cs["headcount_yoy"]:
+        if cs["headcount"]:
             add(kind="growth", about="company", date=self.today.isoformat(),
-                text=f"{co['name']} has {cs['headcount']:,} employees, {cs['headcount_yoy']:+.0f}% in the last 12 months.",
+                text=f"{co['name']} has {cs['headcount']:,} employees"
+                     + (f", {cs['headcount_yoy']:+.0f}% in the last 12 months." if cs["headcount_yoy"] is not None else "."),
                 sources=[{"label": "Crustdata headcount", "url": None}])
-        for fn in ("Finance", "Accounting"):
-            v = cs["hiring_6m"].get(fn)
-            if v:
-                add(kind="finance_hiring", about="company", date=self.today.isoformat(),
-                    text=f"{fn} hiring at {co['name']} changed {v * 100:+.0f}% over 6 months.",
-                    sources=[{"label": "Crustdata hiring data", "url": None}])
         for j in getattr(self, "jobs", []):
-            desc = (j.get("content") or {}).get("description") or ""
-            m = re.search(r"[^.\n]{0,140}\b(manual|reconcil\w*|automat\w*|spreadsheet|handoffs?)\b[^.\n]{0,140}", desc, re.I)
-            add(kind="job_post", about="company", job_title=j["job_details"]["title"], date=((j.get("metadata") or {}).get("date_added") or "")[:10] or None,
-                text=f"{co['name']} is hiring a {j['job_details']['title']}" + (f": “{m.group(0).strip()}”" if m else "."),
+            desc = " ".join(((j.get("content") or {}).get("description") or "").split())
+            add(kind="job_post", about="company", job_title=j["job_details"]["title"],
+                date=((j.get("metadata") or {}).get("date_added") or "")[:10] or None,
+                text=f"{co['name']} is hiring a {j['job_details']['title']}.", excerpt=desc[:700],
                 sources=[{"label": "Job post", "url": j["job_details"].get("url")}])
-        self._news_events(add)
-        self.run["signals"] = sig
-        self.log(f"{len(sig)} signals: " + ", ".join(sorted({s['kind'].replace('_', ' ') for s in sig})))
-        return f"{len(sig)} signals from profile, company data, roles and news"
-
-    def _news_events(self, add):
         news = [n for n in (self.cdata.get("news") or []) if d(n.get("article_publish_date"))
                 and (self.today - d(n["article_publish_date"])).days <= config.NEWS_WINDOW_DAYS]
-        news.sort(key=lambda n: n["article_publish_date"], reverse=True)
-        news = news[:80]
-        if not news:
-            self.log("No recent news.")
-            return
-        items = [{"i": i, "date": n["article_publish_date"][:10], "title": n.get("article_title"),
-                  "outlet": n.get("article_publisher_name")} for i, n in enumerate(news)]
-        co = self.run["company"]["name"]
-        data, meta = llm.ask(
-            "You group news headlines about one company into distinct real-world events for a B2B sales researcher.",
-            f"Company: {co}. Headlines (JSON list):\n{llm.src(items)}\n\n"
-            "Group headlines that report the same event. For each event return: label (short, factual), "
-            "type (one of funding, expansion, product, partnership, pricing, leadership, acquisition, customer, "
-            "marketing, layoffs, legal, security, award, other), items (list of i), "
-            "sensitive (true only if the event itself is bad news for the company or its people: layoffs, lawsuits, "
-            "investigations, breaches, deaths, bankruptcy, scandals; read the headline in context, e.g. 'nearly died "
-            "two years ago, now worth $20B' is a success story, not sensitive), "
-            "sensitive_reason (short, or empty), "
-            "about_company (false if mainly about another company, a listicle, a how-to for shoppers, a funding "
-            "database page, or only a passing mention), "
-            "summary (one factual sentence using only facts in the headlines). "
-            'Return {"events": [...]} with every headline used at most once.', tag="news", prefer="gemini")
-        self.log(f"Grouped {len(news)} headlines into events ({meta['model']}{', cached' if meta['cached'] else ''})")
-        used = set()
-        for ev in data.get("events", []):
-            idx = [i for i in ev.get("items", []) if isinstance(i, int) and 0 <= i < len(news) and i not in used]
-            if not idx:
+        seen = set()
+        for n in sorted(news, key=lambda n: n["article_publish_date"], reverse=True):
+            key = norm(n.get("article_title"))[:80]
+            if key in seen:
                 continue
-            used.update(idx)
-            arts = [news[i] for i in idx]
-            outlets = sorted({a.get("publisher_domain") or a.get("article_publisher_name") for a in arts})
-            first = min(a["article_publish_date"][:10] for a in arts)
-            titles = " ".join(a.get("article_title") or "" for a in arts)
-            s = add(kind="news", event_type=ev.get("type", "other"), about="company", date=first,
-                    text=ev.get("summary") or ev.get("label"), label=ev.get("label"),
-                    coverage=len(outlets), flags=[], amounts=sorted(set(money_usd(titles))),
-                    judge1={"model": meta["model"], "sensitive": bool(ev.get("sensitive")),
-                            "about_company": ev.get("about_company", True), "reason": ev.get("sensitive_reason") or ""},
-                    sources=[{"label": a.get("article_publisher_name"), "url": a.get("article_url"),
-                              "title": a.get("article_title"), "date": a["article_publish_date"][:10]} for a in arts[:12]])
-            self.log(f"Event: {s['label']} · {len(outlets)} outlet{'s' if len(outlets) != 1 else ''} · {first}")
-
-    # ---------------------------------------------------------------- guards
-    def _second_opinion(self, events):
-        """A different model judges every news event on its own, without seeing the first model's labels."""
-        co = self.run["company"]["name"]
-        pack = [{"id": s["id"], "date": s["date"], "headlines": [x.get("title") for x in s["sources"][:6]]} for s in events]
-        data, meta = llm.ask(
-            "You review news about a company for a sales team that must never open an email with bad news.",
-            f"Company: {co}.\nEvents:\n{llm.src(pack)}\n\nFor each event decide, reading the headlines in context: "
-            "sensitive (true only if the event is bad news for the company or its people: layoffs, lawsuits, "
-            "investigations, breaches, deaths, bankruptcy, scandals), reason (short), about_company (false if it is "
-            "mainly about another company, a listicle or only a passing mention). "
-            'Return {"events": [{"id", "sensitive", "reason", "about_company"}]}', tag="news2", prefer="deepseek")
-        return {e.get("id"): e for e in data.get("events", [])}, meta
-
-    def s_guards(self):
-        sig = self.run["signals"]
-        today = self.today
-        events = [s for s in sig if s["kind"] == "news"]
-        j2, meta2 = self._second_opinion(events) if events else ({}, {"model": "-"})
-        if events:
-            m1 = events[0]["judge1"]["model"]
-            self.log(f"Second opinion on {len(events)} news events from {meta2['model']} (first opinion: {m1})")
-            if meta2["model"] == m1:
-                self.log("Second model unavailable, the same model answered twice: treat as one opinion.", "warn")
-        n_block = 0
+            seen.add(key)
+            add(kind="news", about="company", date=n["article_publish_date"][:10], text=n.get("article_title") or "",
+                label=n.get("article_title"),
+                sources=[{"label": n.get("article_publisher_name"), "url": n.get("article_url"),
+                          "title": n.get("article_title"), "date": n["article_publish_date"][:10]}])
+            if len([s for s in sig if s["kind"] == "news"]) >= 60:
+                break
         for s in sig:
             dt = d(s.get("date"))
-            age = (today - dt).days if dt else None
-            s["age_days"] = age
-            if s["kind"] == "news":
-                a, b = s["judge1"], j2.get(s["id"], {})
-                s["judge2"] = {"model": meta2["model"], "sensitive": bool(b.get("sensitive")),
-                               "about_company": b.get("about_company", True), "reason": b.get("reason") or ""}
-                both_off = not a["about_company"] and not s["judge2"]["about_company"]
-                if both_off:
-                    s["flags"].append("off_topic")
-                    self.check("off_topic", "pass", f"Ignored: “{s.get('label') or s['text'][:60]}”",
-                               "Both models: not really about this company.", [s["id"]])
-                elif a["sensitive"] and s["judge2"]["sensitive"]:
-                    s["flags"].append("sensitive")
-                    n_block += 1
-                    self.check("sensitive", "block", f"Sensitive, both models agree: “{s.get('label')}”",
-                               f"{a['model']}: {a['reason'] or 'sensitive'} · {s['judge2']['model']}: {s['judge2']['reason'] or 'sensitive'}",
-                               [s["id"]])
-                elif a["sensitive"] != s["judge2"]["sensitive"]:
-                    s["flags"].append("disputed")
-                    yes = a if a["sensitive"] else s["judge2"]
-                    no = s["judge2"] if a["sensitive"] else a
-                    self.check("disputed", "warn", f"Models disagree whether this is bad news: “{s.get('label')}”",
-                               f"{yes['model']} says sensitive ({yes['reason'] or 'no reason given'}); {no['model']} says not. "
-                               "Not used as a hook; the rep can judge.", [s["id"]])
-            if s["kind"] not in ("background", "growth", "finance_hiring") and age is not None and age > config.STALE_DAYS:
-                s["flags"].append("stale")
-                self.check("stale", "warn", f"Too old to open with: {s['text'][:70]}", f"{age} days old (limit {config.STALE_DAYS}).", [s["id"]])
-            if s["kind"] == "job_post" and same_title(s.get("job_title"), self.run["person"].get("title")):
-                s["flags"].append("own_role")
-                self.check("own_role", "block", f"Job post for the prospect's own role: “{s.get('job_title')}”",
-                           "Could be their replacement or an old post for the job they hold. Never mentioned.", [s["id"]])
-            text = s["text"] + " " + " ".join((x.get("title") or "") for x in s.get("sources", []))
-            comp = [c for c in SELLER["competitors"] if re.search(r"\b" + re.escape(c) + r"\b", text)]
-            if comp:
-                s["flags"].append("competitor")
-                self.check("competitor", "warn", f"Mentions a competitor ({', '.join(comp)})",
-                           "Not used as a hook: it would advertise the competitor.", [s["id"]])
-        # Crowded: the same event reported everywhere -> every other rep will open with it too.
+            s["age_days"] = (self.today - dt).days if dt else None
+        self.run["signals"] = sig
+        counts = {}
         for s in sig:
-            if s["kind"] == "news" and not set(s["flags"]) & {"off_topic", "sensitive"} \
-                    and s.get("event_type") in ("funding", "acquisition", "product", "leadership") \
-                    and s["coverage"] >= config.CROWDED_OUTLETS:
-                s["flags"].append("crowded")
-                self.check("crowded", "warn", f"Crowded: “{s.get('label')}” was covered by {s['coverage']} outlets",
-                           "Every other rep will open with this. It can be context, not the opening line.", [s["id"]])
-                fund = next((f for f in sig if f["kind"] == "funding"), None)
-                if fund and s.get("event_type") == "funding":
-                    fund["flags"].append("crowded")
-        # Conflict: the database and the press disagree on a number.
-        fund = next((f for f in sig if f["kind"] == "funding"), None)
-        if fund and fund.get("amount"):
-            for s in sig:
-                if s["kind"] == "news" and s.get("event_type") == "funding" and s.get("amounts"):
-                    close = [a for a in s["amounts"] if abs(a - fund["amount"]) / fund["amount"] < 0.5]
-                    if close and all(abs(a - fund["amount"]) / fund["amount"] > 0.001 for a in close):
-                        for x in (fund, s):
-                            x["flags"].append("conflict")
-                            x["no_numbers"] = True
-                        self.check("conflict", "warn",
-                                   f"Sources disagree on the amount: database {fmt_usd(fund['amount'])}, press {', '.join(fmt_usd(a) for a in close)}",
-                                   "The email may mention the round but not the amount.", [fund["id"], s["id"]])
-        # Suspicious statistic: open roles collapse while the press reports expansion.
-        oj = [v for _, v in self.run["company_data"]["open_jobs"] if v is not None]
-        expanding = [s for s in sig if s["kind"] == "news" and s.get("event_type") == "expansion"
-                     and (s.get("age_days") or 999) <= 60 and "off_topic" not in s["flags"]]
-        if len(oj) >= 4 and max(oj) >= 20 and oj[-1] <= 0.2 * max(oj):
-            msg = f"Open roles fell from {max(oj)} to {oj[-1]} in the data"
-            if expanding:
-                self.check("anomaly", "warn", msg + ", but the press reports expansion",
-                           f"Fresh news wins: “{expanding[0].get('label')}”. Hiring numbers are not used.",
-                           [e["id"] for e in expanding])
-            else:
-                self.check("anomaly", "warn", msg, "Could be a freeze or a gap in the data. Hiring numbers are not used.")
-            for s in sig:
-                if s["kind"] == "finance_hiring":
-                    s["flags"].append("unreliable")
-        self.log(f"{len(self.run['checks'])} checks, {n_block} blocked")
-        return f"{sum(1 for c in self.run['checks'] if c['status'] != 'pass')} findings · two models judged the news"
+            counts[s["kind"]] = counts.get(s["kind"], 0) + 1
+        self.log("Facts: " + ", ".join(f"{v} {k.replace('_', ' ')}" for k, v in counts.items()))
+        return f"{len(sig)} facts, each with a source number"
 
-    # ---------------------------------------------------------------- the brief every model reads
-    FLAG_TEXT = {"crowded": "reported by many outlets; never the opening line",
-                 "conflict": "sources disagree on its numbers; never state the numbers",
-                 "stale": "too old to open with", "sensitive": "bad news; never use",
-                 "disputed": "models disagree whether this is bad news; never use",
-                 "own_role": "job post for the prospect's own role; never mention",
-                 "competitor": "mentions a competitor; never use", "unreliable": "statistic contradicts fresher news; ignore"}
-    BLOCKING = {"sensitive", "disputed", "own_role", "competitor", "unreliable", "stale", "off_topic"}
-
-    def _brief(self, with_flags=True):
+    # ---------------------------------------------------------------- the agent
+    def _brief(self):
         pr, co, cs = self.run["person"], self.run["company"], self.run["company_data"]
         facts = []
         for s in self.run["signals"]:
-            if "off_topic" in s["flags"]:
-                continue
-            f = {"id": s["id"], "kind": s["kind"] if s["kind"] != "news" else f"news/{s.get('event_type')}",
-                 "about": s["about"], "date": s.get("date"), "age_days": s.get("age_days"), "fact": s["text"]}
+            f = {"id": s["id"], "kind": s["kind"], "date": s.get("date"), "fact": s["text"]}
+            if s.get("excerpt"):
+                f["job_description_excerpt"] = s["excerpt"]
             if s["kind"] == "news":
-                f["outlets"] = s["coverage"]
-                f["headlines"] = [x.get("title") for x in s["sources"][:3]]
-            if with_flags and s["flags"]:
-                f["flags"] = {fl: self.FLAG_TEXT.get(fl, fl) for fl in s["flags"]}
+                f["outlet"] = s["sources"][0].get("label")
             facts.append(f)
         return {
             "prospect": {"name": pr["name"], "title": pr["title"], "company": co["name"],
                          "in_role_since": (pr.get("start") or "")[:7], "days_in_role": pr.get("tenure_days"),
-                         "headline": pr.get("headline"),
-                         "past_roles": [f"{j['title']} at {j['company']} ({(j['start'] or '')[:4]}-{(j['end'] or '')[:4]})" for j in pr["past"][:5]]},
-            "company": {"name": co["name"], "description": cs.get("description"), "employees": cs.get("headcount"),
-                        "employee_growth_12m_pct": round(cs["headcount_yoy"]) if cs.get("headcount_yoy") is not None else None},
+                         "headline": pr.get("headline")},
+            "company": {"name": co["name"], "description": cs.get("description")},
             "rep_notes": self.run["input"].get("notes") or None,
             "facts": facts,
             "zamp_customer_results": [{"i": i, "customer": p["customer"], "result": p["result"]} for i, p in enumerate(SELLER["proof"])],
             "today": self.today.isoformat(),
         }
 
-    # ---------------------------------------------------------------- hook
     def s_hook(self):
-        brief = self._brief()
         sig = {s["id"]: s for s in self.run["signals"]}
-        ask = ("Choose the hook for this prospect. Assess EVERY fact. Return JSON: "
-               '{"assessments": [{"id", "use": "hook"|"support"|"context"|"skip", "fit": 1-5, "reason": one short sentence}], '
-               '"hook": [fact ids the email opens on; one id, or several of the same kind of event], '
-               '"support": [person fact ids to connect in one clause, may be empty], "context": fact id or null, '
-               '"angle": "the finance work this creates for this person, one sentence", '
-               '"why": "why this hook beats the others, two sentences max", "confidence": "high"|"medium"|"low"}')
-        problems = ""
-        for attempt in range(2):
-            data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(brief)}\n\n{ask}{problems}",
-                                 tag="strategist", prefer="gemini", max_tokens=6000)
-            hook_ids = [h for h in (data.get("hook") or []) if h in sig] if isinstance(data.get("hook"), list) \
-                else [data.get("hook")] if data.get("hook") in sig else []
-            bad = [h for h in hook_ids if set(sig[h]["flags"]) & self.BLOCKING or "crowded" in sig[h]["flags"]
-                   or sig[h]["kind"] == "background"]
-            self.log(f"Strategist ({meta['model']}{', cached' if meta['cached'] else ''}) chose {hook_ids or 'nothing'}, "
-                     f"confidence {data.get('confidence')}")
-            if not bad:
-                break
-            problems = ("\n\nYour previous choice broke the rules: " + "; ".join(
-                f"{h} is flagged {', '.join(sig[h]['flags']) or sig[h]['kind']}" for h in bad) + ". Choose again.")
-            self.log("Code rejected that hook: " + problems.strip(), "warn")
-            hook_ids = []
-        for a in data.get("assessments", []):
-            s = sig.get(a.get("id"))
-            if s:
-                s["fit"], s["use"], s["reason"] = a.get("fit"), a.get("use"), a.get("reason")
-        for s in sig.values():
-            if s["id"] in hook_ids:
-                s["use"] = "hook"
-        self.run["hook"] = {"ids": hook_ids, "id": hook_ids[0] if hook_ids else None,
-                            "support": [x for x in (data.get("support") or []) if x in sig],
-                            "context": data.get("context") if data.get("context") in sig else None,
-                            "angle": data.get("angle"), "why": data.get("why"),
-                            "confidence": data.get("confidence"), "model": meta["model"],
-                            "ranking": [a["id"] for a in sorted(data.get("assessments", []), key=lambda a: -(a.get("fit") or 0)) if a.get("id") in sig]}
-        if not hook_ids or data.get("confidence") == "low":
-            self.run["question"] = {"kind": "low_signal",
-                                    "text": "Nothing gives a real reason to write to this person now. " + (data.get("why") or ""),
-                                    "options": [{"id": "generic", "label": "Write a short role-based email, marked low personalisation"},
-                                                {"id": "stop", "label": "Don't email yet", "detail": "Re-run next month."}]}
-            if not self.run.get("allow_generic"):
-                raise Pause("Signal too thin. Rep decides")
+        ask = ("Read the whole brief, choose the hook and write the email. Cite fact ids for every factual sentence. "
+               "Return JSON: {"
+               '"hook": [fact ids the email opens on: one, or several about the same kind of event], '
+               '"why": "why this hook, in two sentences", "angle": "the finance work it creates for this person", '
+               '"not_chosen": [{"id", "reason"}] for the 5 strongest alternatives, '
+               '"confidence": "high"|"medium"|"low", '
+               '"subject": str, "body": str, '
+               '"claims": [{"text": exact sentence from the body, "facts": [fact ids], "proof": [customer result i]}]}')
+        data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(self._brief())}\n\n{ask}",
+                             tag="agent", prefer="gemini", temperature=0.4, max_tokens=8000)
+        self.log(f"Agent: {meta['model']}{' (cached)' if meta['cached'] else ''}, {meta['ms'] / 1000:.1f} s")
+        hook_ids = [h for h in (data.get("hook") or []) if h in sig]
+        for x in data.get("not_chosen") or []:
+            if x.get("id") in sig:
+                sig[x["id"]]["reason"] = x.get("reason")
+                sig[x["id"]]["use"] = "not chosen"
+        for h in hook_ids:
+            sig[h]["use"] = "hook"
+        self.run["hook"] = {"ids": hook_ids, "id": hook_ids[0] if hook_ids else None, "why": data.get("why"),
+                            "angle": data.get("angle"), "confidence": data.get("confidence"), "model": meta["model"],
+                            "not_chosen": [x.get("id") for x in data.get("not_chosen") or [] if x.get("id") in sig],
+                            "support": [], "context": None, "ranking": []}
+        body = data.get("body") or ""
+        self.run["draft"] = {"subject": data.get("subject") or "", "body": body, "claims": data.get("claims") or [],
+                             "words": len(body.split()), "writer": meta["model"], "lint": [], "issues": []}
         for h in hook_ids:
             self.log(f"Hook: {sig[h].get('label') or sig[h]['text']}")
         self.log(f"Why: {data.get('why')}")
+        self.log(f"Confidence: {data.get('confidence')}")
         first = sig[hook_ids[0]] if hook_ids else None
-        return f"Hook: {(first.get('label') or first['text'])[:90]}" + (f" (+{len(hook_ids) - 1} more)" if len(hook_ids) > 1 else "") \
-            if first else "No hook. Low-personalisation draft"
+        return (f"Hook: {(first.get('label') or first['text'])[:90]}" if first else "No clear hook") + \
+            f" · {self.run['draft']['words']}-word draft"
 
-    # ---------------------------------------------------------------- draft
-    def _write(self, notes=""):
-        h = self.run["hook"]
-        plan = {k: h.get(k) for k in ("ids", "support", "context", "angle", "why")}
-        plan["hook"] = plan.pop("ids")
-        ask = ("Write the email following the plan. Return JSON: "
-               '{"subject": "under 7 words, lowercase except names", "body": str, '
-               '"claims": [{"text": exact sentence from the body that states a fact, "facts": [fact ids], "proof": [customer result i]}]}. '
-               "Every sentence that states a fact about the prospect, the company or a customer result must be a claim.")
-        data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(self._brief())}\n\nPlan from the strategist:\n{llm.src(plan)}\n\n{ask}{notes}",
-                             tag="writer", prefer="gemini", temperature=0.4)
-        return data, meta
-
-    def s_draft(self):
-        sig = {s["id"]: s for s in self.run["signals"]}
-        out, meta = self._write()
-        issues = self._lint(out, sig)
-        if issues:
-            self.log(f"Draft by {meta['model']} broke {len(issues)} hard rules: " + "; ".join(issues), "warn")
-            out, meta = self._write("\n\nYour previous draft broke these rules, fix all of them: " + "; ".join(issues))
-            issues = self._lint(out, sig)
-        self.log(f"Draft by {meta['model']}{' (cached)' if meta['cached'] else ''}: "
-                 + ("passes the hard rules" if not issues else "; ".join(issues)), "info" if not issues else "warn")
-        out["lint"], out["words"], out["writer"] = issues, len(out.get("body", "").split()), meta["model"]
-        out["rounds"] = []
-        self.run["draft"] = out
-        return f"{out['words']} words · " + ("passes the hard rules" if not issues else f"{len(issues)} rule warnings")
-
-    def _lint(self, out, sig):
-        """Exact checks only: things with one right answer."""
-        body, subj = out.get("body") or "", out.get("subject") or ""
-        low = (subj + " " + body).lower()
-        issues = []
-        words = len(body.split())
-        if words > config.MAX_WORDS:
-            issues.append(f"body is {words} words (max {config.MAX_WORDS})")
-        for b in config.BANNED:
-            if b in low:
-                issues.append(f"uses the phrase “{b}”")
-        if "!" in body:
-            issues.append("contains an exclamation mark")
-        for c in SELLER["competitors"]:
-            if re.search(r"\b" + re.escape(c) + r"\b", body):
-                issues.append(f"names a competitor ({c})")
-        allowed = re.sub(r",", "", " ".join(s["text"] + " " + " ".join(x.get("title") or "" for x in s.get("sources", []))
-                                             for s in sig.values() if not s.get("no_numbers"))
-                         + " " + " ".join(p["result"] for p in SELLER["proof"]))
-        for n in re.findall(r"\$?\d[\d,.]*\s?(?:%|[BbMm]\b|billion|million)?", body):
-            core = re.sub(r"[^\d.]", "", n).rstrip(".")
-            if core and len(core) >= 2 and core not in allowed:
-                issues.append(f"number “{n.strip()}” is not in any source")
-        for c in out.get("claims", []):
-            for f in c.get("facts", []):
-                if f not in sig:
-                    issues.append(f"claim cites unknown fact {f}")
-                elif set(sig[f]["flags"]) & (self.BLOCKING - {"stale"}):
-                    issues.append(f"cites {f}, which is flagged {', '.join(set(sig[f]['flags']) & self.BLOCKING)}")
-        return sorted(set(issues))
-
-    # ---------------------------------------------------------------- independent review
-    def _review(self, dr):
-        brief = self._brief(with_flags=True)
-        claims = [{"i": i, "text": c.get("text"), "cites": c.get("facts", []), "proof": c.get("proof", [])}
-                  for i, c in enumerate(dr.get("claims") or [])]
-        ask = ("Review this email. Return JSON: "
-               '{"claims": [{"i", "verdict": "supported"|"partly"|"unsupported", "reason"}], '
-               '"unlisted": [{"sentence": str, "checkable_fact": true|false, "supported": true|false}] for sentences not in claims '
-               '(a checkable fact names a specific event, number, date, person or company; hedged inferences, questions, '
-               'greetings and the sign-off are not checkable facts), '
-               '"issues": [{"severity": "block"|"warn", "sentence": str, "problem": str}], '
-               '"genericness": 0-5, "genericness_reason": str, "verdict": "pass"|"fix"}. '
-               "Use severity block for anything false, illogical or embarrassing for this reader.")
-        return llm.ask(REVIEWER, f"Research brief:\n{llm.src(brief)}\n\nEmail subject: {dr.get('subject')}\nEmail body:\n"
-                                 f"{llm.src(dr.get('body'))}\n\nClaims with the facts they cite:\n{llm.src(claims)}\n\n{ask}",
-                       tag="review", prefer="deepseek", max_tokens=4000)
-
+    # ---------------------------------------------------------------- citations (code: does each cited source exist?)
     def s_factcheck(self):
         sig = {s["id"]: s for s in self.run["signals"]}
         dr = self.run["draft"]
-        for rnd in range(2):
-            rv, meta = self._review(dr)
-            independent = meta["model"] != dr.get("writer")
-            blocks = [x for x in rv.get("issues", []) if x.get("severity") == "block"]
-            dr["rounds"].append({"reviewer": meta["model"], "independent": independent, "issues": rv.get("issues", []),
-                                 "verdict": rv.get("verdict"), "body": dr.get("body")})
-            self.log(f"Review {rnd + 1} by {meta['model']}{' (cached)' if meta['cached'] else ''}"
-                     f"{'' if independent else ' (same model as the writer: not independent)'}: "
-                     f"{len(blocks)} blocking, {len(rv.get('issues', [])) - len(blocks)} minor", "info" if not blocks else "warn")
-            for x in rv.get("issues", []):
-                self.log(f"{x.get('severity', '').upper()}: {x.get('problem')} — “{(x.get('sentence') or '')[:80]}”",
-                         "warn" if x.get("severity") == "block" else "info")
-            if not blocks or rnd == 1:
-                break
-            notes = "\n\nAn independent reviewer found these problems; fix every one and keep everything else: " + \
-                    "; ".join(f"“{x.get('sentence')}”: {x.get('problem')}" for x in blocks)
-            out, wmeta = self._write(notes)
-            out["lint"], out["words"], out["writer"], out["rounds"] = self._lint(out, sig), len(out.get("body", "").split()), wmeta["model"], dr["rounds"]
-            dr = self.run["draft"] = out
-            self.log(f"Rewritten by {wmeta['model']} with the reviewer's notes")
-        verdicts = {x.get("i"): x for x in rv.get("claims", [])}
-        claims = dr.get("claims") or []
-        for i, c in enumerate(claims):
-            v = verdicts.get(i, {})
-            c["verdict"], c["reason"] = v.get("verdict", "unsupported"), v.get("reason", "not checked")
-            if not c.get("facts") and not c.get("proof"):
-                c["verdict"], c["reason"] = "unsupported", "no source cited"
-        # only specific, checkable facts the reviewer could not support count against the email
-        dr["unlisted"] = [u.get("sentence") if isinstance(u, dict) else u for u in (rv.get("unlisted") or [])
-                          if isinstance(u, dict) and u.get("checkable_fact") and not u.get("supported")]
-        dr["issues"] = rv.get("issues") or []
-        dr["reviewer"] = meta["model"]
-        dr["genericness"], dr["genericness_reason"] = rv.get("genericness"), rv.get("genericness_reason")
-        open_blocks = [x for x in dr["issues"] if x.get("severity") == "block"]
-        bad = [c for c in claims if c["verdict"] == "unsupported"]
-        if bad or dr["unlisted"] or open_blocks:
-            dr["approve_blocked"] = (f"{len(bad) + len(dr['unlisted'])} unsupported claim(s), {len(open_blocks)} blocking issue(s) "
-                                     "from the reviewer. Edit the email before approving.")
-        warn = bad or open_blocks or dr.get("lint") or any(c["verdict"] == "partly" for c in claims) \
-            or (dr["genericness"] or 0) >= 3 or dr["issues"]
-        if not self.run["hook"].get("id"):
-            warn, dr["low_personalisation"] = True, True
-        self.run["outcome"] = "ready_with_warnings" if warn else "ready"
-        ok = sum(1 for c in claims if c["verdict"] == "supported")
-        return f"{meta['model']}: {ok}/{len(claims)} claims supported · {len(open_blocks)} blocking issues · rounds {len(dr['rounds'])}"
+        notes = []
+        for c in dr["claims"]:
+            known = [f for f in c.get("facts", []) if f in sig]
+            proof = [p for p in c.get("proof", []) if isinstance(p, int) and 0 <= p < len(SELLER["proof"])]
+            c["facts"], c["proof"] = known, proof
+            in_body = (c.get("text") or "") in dr["body"]
+            if (known or proof) and in_body:
+                c["verdict"], c["reason"] = "cited", "Cites " + ", ".join(known + [f"Zamp result {p + 1}" for p in proof])
+            else:
+                c["verdict"] = "uncited"
+                c["reason"] = "Sentence not found in the email" if not in_body else "No source cited"
+        if dr["words"] > config.MAX_WORDS:
+            notes.append(f"{dr['words']} words, longer than {config.MAX_WORDS}")
+        if self.run["hook"].get("confidence") == "low" or not self.run["hook"].get("ids"):
+            dr["low_personalisation"] = True
+            notes.append("The agent found no strong reason to write")
+        dr["lint"] = notes
+        ok = sum(1 for c in dr["claims"] if c["verdict"] == "cited")
+        self.run["outcome"] = "ready" if ok == len(dr["claims"]) and not notes else "ready_with_warnings"
+        for c in dr["claims"]:
+            self.log(f"{c['verdict'].upper():8} {c['text'][:90]}", "info" if c["verdict"] == "cited" else "warn")
+        return f"{ok}/{len(dr['claims'])} sentences cite a source"
 
 
 class Stop(Exception):
