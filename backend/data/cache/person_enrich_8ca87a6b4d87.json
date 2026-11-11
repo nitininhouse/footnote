@@ -1,0 +1,320 @@
+{
+ "path": "/person/enrich",
+ "body": {
+  "professional_network_profile_urls": [
+   "https://www.linkedin.com/in/kristin-schaefer-15b18a1b"
+  ],
+  "fields": [
+   "basic_profile",
+   "experience",
+   "education",
+   "skills",
+   "professional_network"
+  ]
+ },
+ "credits": 1.0,
+ "data": [
+  {
+   "matched_on": "https://www.linkedin.com/in/kristin-schaefer-15b18a1b",
+   "match_type": "professional_network_profile_url",
+   "match_status": "matched",
+   "matches": [
+    {
+     "confidence_score": 1.0,
+     "person_data": {
+      "basic_profile": {
+       "current_title": "Chief Financial Officer",
+       "first_name": "Kristin",
+       "headline": "CFO at Whatnot",
+       "languages": [],
+       "last_name": "Schaefer",
+       "location": {
+        "city": "San Francisco",
+        "continent": "North America",
+        "country": "United States",
+        "full_location": null,
+        "raw": "San Francisco, California, United States",
+        "state": "California"
+       },
+       "name": "Kristin Schaefer",
+       "normalized_title": {
+        "confident": true,
+        "department": "Finance & Accounting",
+        "matched_title": "Chief Financial Officer",
+        "similarity": 0.9998999834060669,
+        "sub_department": "Financial Planning & Analysis"
+       },
+       "professional_network_name": "Kristin Schaefer",
+       "profile_picture_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/person/87defb8cbe33915c63c7bc4adf06ddcaebeefdcc9f618352c68545f451912ffa.jpg",
+       "summary": ""
+      },
+      "crustdata_person_id": 2705897,
+      "education": {
+       "schools": [
+        {
+         "activities_and_societies": "Track & Field",
+         "degree": "Honors BA",
+         "description": "",
+         "end_year": null,
+         "field_of_study": "Economics",
+         "institute_logo_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/company/160f6d90a2955dced115f82e69a81c740189b17321e6835d87b014389588bea5.jpg",
+         "institute_logo_url": "https://media.licdn.com/dms/image/v2/C4D0BAQELVZKDzlGDzA/company-logo_400_400/company-logo_400_400/0/1631325633796?e=1786579200&v=beta&t=seoO4FR0NCgKWZMGzLsOZ-zG8qImagVwiEf7TDbaQQQ",
+         "location": {
+          "city": null,
+          "continent": "North America",
+          "country": "United States of America",
+          "raw": "207 Parkhurst Hall",
+          "state": "New Hampshire"
+         },
+         "professional_network_id": "163348",
+         "school": "Dartmouth College",
+         "start_year": null
+        },
+        {
+         "activities_and_societies": "",
+         "degree": "MBA",
+         "description": "",
+         "end_year": null,
+         "field_of_study": "Entrepreneurship",
+         "institute_logo_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/company/fd47c4d4380d163b0f026995b504b3a3e4951aaa11a9ec0024d308951ebdf3ea.jpg",
+         "institute_logo_url": "https://media.licdn.com/dms/image/v2/D560BAQEgtgO__FQAyw/company-logo_400_400/B56ZoSxhMVJwAY-/0/1761251562935/berkeley_haas_logo?e=1786579200&v=beta&t=QQQbDsVCB5yzOiym3KhEJR5XlAUc6wZ7_elBZrHNoh4",
+         "location": {
+          "city": "Berkeley",
+          "continent": "North America",
+          "country": "United States",
+          "raw": "2220 Piedmont Ave",
+          "state": "California"
+         },
+         "professional_network_id": "2519",
+         "school": "University of California, Berkeley, Haas School of Business",
+         "start_year": null
+        }
+       ]
+      },
+      "experience": {
+       "employment_details": {
+        "current": [
+         {
+          "company_description": "Whatnot is the largest livestream shopping platform in the US, UK, and Europe. Millions of people come to Whatnot every day to buy, sell, and connect over the things they love, from sneakers to sports cards, vintage fashion to fine jewelry, comics to Pok\u00e9mon, beauty, electronics, and hundreds of other categories.In 2025, live sales on Whatnot surpassed $8B, more than doubling the year before. Over 20 million accounts were created last year alone, and we have been the #1 shopping app in both the US and UK. We've built a real business, but we're nowhere near done. Live commerce at this scale has never been done in the West, which means the people here now are shaping how an entirely new industry develops.The pace here is fast and the expectations are high. We move quickly, prioritize ruthlessly, and trust people to own their work end-to-end. In return, careers grow faster, impact is real, and your colleagues will raise your standards. It's an environment built for people who want to do the best work of their careers alongside others doing the same.We're a remote, co-located team with hubs in the US, UK, Ireland, Poland, and Germany, and we're hiring across every function.",
+          "company_headcount_latest": 2223,
+          "company_headcount_range": "1001-5000",
+          "company_industries": [
+           "Technology, Information and Internet",
+           "Technology, Information and Media"
+          ],
+          "company_professional_network_industry": "Technology, Information and Internet",
+          "company_professional_network_profile_url": "https://linkedin.com/company/52160608",
+          "company_profile_picture_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/company/9d0c97f99d41838deb08e71229fe96ebd33a876eb512855e9a0cacb72adf37ec.jpg",
+          "company_status": "active",
+          "company_website": "http://www.whatnot.com",
+          "company_website_domain": "whatnot.com",
+          "crustdata_company_id": 640384,
+          "description": "",
+          "employment_type": "Full-time",
+          "end_date": null,
+          "function_category": "Finance",
+          "is_default": true,
+          "location": {
+           "raw": ""
+          },
+          "name": "Whatnot",
+          "position_id": 2954925673,
+          "professional_network_id": "52160608",
+          "seniority_level": "CXO",
+          "start_date": "2026-06-01T00:00:00+00:00",
+          "title": "Chief Financial Officer",
+          "years_at_company": "Less than 1 year",
+          "years_at_company_raw": 0.0
+         }
+        ],
+        "past": [
+         {
+          "company_description": "Atomic is the venture studio that pioneered the model of starting companies by pairing founders with the best ideas, teams, and resources. When entrepreneurs team up with Atomic, they join a group of experienced founders and a ready-made team of experts who have successfully built many companies, generating billions of dollars in value. Our fourth fund of $320 million is used exclusively to fund companies started at Atomic.",
+          "company_headcount_latest": 711,
+          "company_headcount_range": "51-200",
+          "company_industries": [
+           "Financial Services"
+          ],
+          "company_professional_network_industry": "Financial Services",
+          "company_professional_network_profile_url": "https://linkedin.com/company/2913118",
+          "company_profile_picture_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/company/fd76d98b85b6e04b606020a497c7f05cbc52878b7b9c8259d4457ee48ed68e6f.jpg",
+          "company_status": "active",
+          "company_website": "https://atomic.vc",
+          "company_website_domain": null,
+          "crustdata_company_id": 6085777,
+          "description": "Founding, building and investing in technology companies",
+          "employment_type": "",
+          "end_date": "2026-05-01T00:00:00+00:00",
+          "function_category": "",
+          "is_default": false,
+          "location": {
+           "raw": "San Francisco, CA"
+          },
+          "name": "Atomic",
+          "position_id": 2174614965,
+          "professional_network_id": "2913118",
+          "seniority_level": "Owner / Partner",
+          "start_date": "2022-06-01T00:00:00+00:00",
+          "title": "General Partner",
+          "years_at_company": "3 to 5 years",
+          "years_at_company_raw": 3.0
+         },
+         {
+          "company_description": "Postmates is transforming the way local goods move around a city by enabling anyone to get any product delivered in under an hour. Available for iPhone, Android and on the web, the on-demand logistics service connects customers with local couriers, who purchase and deliver goods from any restaurant or store in a city, 24/7.Postmates\u2019 passionate community of riders and drivers are currently delivering in 40 major metropolitan markets. See the full list at postmates.com.Download the Postmates app today or order online: www.postmates.com",
+          "company_headcount_latest": 4117,
+          "company_headcount_range": "1001-5000",
+          "company_industries": [
+           "Technology, Information and Internet",
+           "Technology, Information and Media"
+          ],
+          "company_professional_network_industry": "Technology, Information and Internet",
+          "company_professional_network_profile_url": "https://linkedin.com/company/2687211",
+          "company_profile_picture_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/company/8ebf2e498c1fe48f4f05482f61e322d508d83c9abe423f9c1d12e89a376eac96.jpg",
+          "company_status": "active",
+          "company_website": "http://Postmates.com",
+          "company_website_domain": "postmates.com",
+          "crustdata_company_id": 632500,
+          "description": "Employee #10, ran Finance, Analytics and Growth, sold to Uber for $4.4B",
+          "employment_type": "",
+          "end_date": "2021-04-01T00:00:00+00:00",
+          "function_category": "Finance",
+          "is_default": false,
+          "location": {
+           "raw": "San Francisco Bay Area"
+          },
+          "name": "Postmates by Uber",
+          "position_id": 1386126004,
+          "professional_network_id": "2687211",
+          "seniority_level": "CXO",
+          "start_date": "2012-05-01T00:00:00+00:00",
+          "title": "Chief Financial Officer",
+          "years_at_company": "6 to 10 years",
+          "years_at_company_raw": 8.0
+         },
+         {
+          "company_description": "Clarium Capital Management is an investment management firm that pursues a global macro strategy, seeking absolute returns through high conviction, directional investments based on key drivers of the global economy and fundamental themes underappreciated by the marketplace.",
+          "company_headcount_latest": 11,
+          "company_headcount_range": "11-50",
+          "company_industries": [
+           "Investment Management",
+           "Capital Markets",
+           "Financial Services"
+          ],
+          "company_professional_network_industry": "Investment Management",
+          "company_professional_network_profile_url": "https://linkedin.com/company/32140",
+          "company_profile_picture_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/company/61fa87eaf09e13239e51a3d9fa4a5c900a4c39a9cb37416f22455039e4dde0c8.jpg",
+          "company_status": "active",
+          "company_website": "http://www.clarium.com",
+          "company_website_domain": "clarium.com",
+          "crustdata_company_id": 992070,
+          "description": "",
+          "employment_type": "",
+          "end_date": "2010-01-01T00:00:00+00:00",
+          "function_category": "",
+          "is_default": false,
+          "location": {
+           "raw": "San Francisco"
+          },
+          "name": "Clarium Capital Management",
+          "position_id": 232383843,
+          "professional_network_id": "32140",
+          "seniority_level": "Entry Level",
+          "start_date": "2008-01-01T00:00:00+00:00",
+          "title": "Associate",
+          "years_at_company": "3 to 5 years",
+          "years_at_company_raw": 2.0
+         },
+         {
+          "company_description": "Monitor Company Group Limited Partnership is the American strategy consulting practice known as Montior Group.  Monitor Group was founded in 1983 by six entrepreneurs with ties to Harvard Business School, including Michael Porter, Mark B. Fuller, and Joseph B. Fuller.The company was officially bought out by Deloitte on January 11, 2013.",
+          "company_headcount_latest": 242,
+          "company_headcount_range": "1001-5000",
+          "company_industries": [
+           "Business Consulting and Services",
+           "Professional Services"
+          ],
+          "company_professional_network_industry": "Business Consulting and Services",
+          "company_professional_network_profile_url": "https://linkedin.com/company/11675766",
+          "company_profile_picture_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/company/fa7452196d3308eeb1216804164e54e6ff844875bd20a5e483300cc53c4d73ba.jpg",
+          "company_status": "active",
+          "company_website": "http://monitor-company-group-lp",
+          "company_website_domain": null,
+          "crustdata_company_id": 1219604,
+          "description": "",
+          "employment_type": "",
+          "end_date": "2008-01-01T00:00:00+00:00",
+          "function_category": "Consulting",
+          "is_default": false,
+          "location": {
+           "raw": "Los Angeles, Boston, San Francisco"
+          },
+          "name": "Monitor Group",
+          "position_id": 115665498,
+          "professional_network_id": "11675766",
+          "seniority_level": "Entry Level",
+          "start_date": "2004-01-01T00:00:00+00:00",
+          "title": "Management Consultant",
+          "years_at_company": "3 to 5 years",
+          "years_at_company_raw": 4.0
+         }
+        ]
+       }
+      },
+      "professional_network": {
+       "connections": 1139,
+       "current_title": "Chief Financial Officer",
+       "followers": 1578,
+       "headline": "CFO at Whatnot",
+       "location": {
+        "city": "San Francisco",
+        "continent": "North America",
+        "country": "United States",
+        "raw": "San Francisco, California, United States",
+        "state": "California"
+       },
+       "metadata": {
+        "last_scraped_source": null
+       },
+       "name": "Kristin Schaefer",
+       "profile_picture_permalink": "https://crustdata-media.s3.us-east-2.amazonaws.com/person/87defb8cbe33915c63c7bc4adf06ddcaebeefdcc9f618352c68545f451912ffa.jpg",
+       "pronoun": "",
+       "summary": ""
+      },
+      "skills": {
+       "professional_network_skills": [
+        "Financial Modeling",
+        "Business Strategy",
+        "Venture Capital",
+        "Valuation",
+        "Corporate Development",
+        "Strategy",
+        "Analytics",
+        "Private Equity",
+        "Due Diligence",
+        "Entrepreneurship",
+        "Strategic Consulting",
+        "Start-ups",
+        "Management Consulting",
+        "Competitive Analysis",
+        "Emerging Markets",
+        "Digital Marketing",
+        "Mergers & Acquisitions",
+        "Market Analysis"
+       ]
+      },
+      "social_handles": {
+       "dev_platform_identifier": {
+        "profile_url": null
+       },
+       "professional_network_identifier": {
+        "profile_url": "https://www.linkedin.com/in/kristin-schaefer-15b18a1b"
+       },
+       "twitter_identifier": {
+        "slug": "kristinjschaef"
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}
