@@ -1,0 +1,87 @@
+import { useEffect, useState } from 'react'
+import { api, ago, type Config, type Row } from '../api'
+import { go } from '../App'
+import { Chip } from './bits'
+
+const SAMPLES = [
+  { name: 'Kristin Schaefer', company: 'Whatnot', title: 'CFO', what: 'Happy path. The funding story is crowded and the sources disagree on the amount, so it opens on the Dublin expansion.' },
+  { name: 'Kristin Schaefer', company: 'Atomic', title: 'General Partner', what: 'Job change. She left Atomic in May 2026; the process stops and offers to follow her to Whatnot.' },
+]
+
+export default function NewRun({ cfg }: { cfg: Config | null }) {
+  const [f, setF] = useState({ name: '', company: '', title: '', linkedin: '', notes: '' })
+  const [mode, setMode] = useState<string>('')
+  const [code, setCode] = useState('')
+  const [err, setErr] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [recent, setRecent] = useState<Row[]>([])
+  useEffect(() => { api.runs().then(r => setRecent(r.slice(0, 6))).catch(() => {}) }, [])
+  const m = mode || cfg?.default_mode || 'replay'
+
+  async function start(v = f) {
+    setErr(''); setBusy(true)
+    try {
+      const { id } = await api.create({ ...v, mode: m, access_code: code })
+      go(`/run/${id}`)
+    } catch (e) { setErr((e as Error).message) } finally { setBusy(false) }
+  }
+  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value })
+
+  return (
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <h1>New prospect</h1>
+          <p className="sub">Name someone. Hookline researches them, picks one reason to write, drafts the email and checks every claim. You approve it.</p>
+        </div>
+      </div>
+      <div className="newrun">
+        <form className="panel panel-pad" onSubmit={e => { e.preventDefault(); start() }}>
+          <div className="form-grid">
+            <div className="field"><label>Full name</label><input className="input" value={f.name} onChange={set('name')} placeholder="Kristin Schaefer" autoFocus /></div>
+            <div className="field"><label>Company</label><input className="input" value={f.company} onChange={set('company')} placeholder="Whatnot" /></div>
+            <div className="field"><label>Title <span className="faint">optional</span></label><input className="input" value={f.title} onChange={set('title')} placeholder="CFO" /></div>
+            <div className="field"><label>LinkedIn profile <span className="faint">optional, skips the name search</span></label><input className="input" value={f.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/in/…" /></div>
+            <div className="field wide"><label>Your notes <span className="faint">optional, never sent to the prospect</span></label><textarea className="textarea" value={f.notes} onChange={set('notes')} placeholder="Met at SaaStr; asked about AP backlog" /></div>
+          </div>
+          <div className="divider" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div className="seg" role="group" aria-label="Data mode">
+              <button type="button" className={m === 'replay' ? 'on' : ''} onClick={() => setMode('replay')}>Replay</button>
+              <button type="button" className={m === 'live' ? 'on' : ''} onClick={() => setMode('live')} disabled={!cfg?.live_available}>Live</button>
+            </div>
+            <span className="muted" style={{ fontSize: 12.5, flex: 1 }}>
+              {m === 'replay' ? 'Uses recorded Crustdata answers. Free and repeatable.' : `Fetches fresh data from Crustdata. Up to ${cfg?.run_cap ?? 6} credits per run.`}
+            </span>
+            {m === 'live' && cfg?.live_needs_code && <input className="input" style={{ width: 140 }} placeholder="Access code" value={code} onChange={e => setCode(e.target.value)} />}
+            <button className="btn primary" disabled={busy || (!f.linkedin && (!f.name || !f.company))}>Research and draft</button>
+          </div>
+          {err && <div className="banner bad" style={{ marginTop: 12, marginBottom: 0 }}>{err}</div>}
+        </form>
+
+        <div style={{ display: 'grid', gap: 16 }}>
+          <div className="panel">
+            <div style={{ padding: '12px 12px 4px' }}><h3>Prepared prospects</h3></div>
+            {SAMPLES.map(s => (
+              <button key={s.company} className="sample" onClick={() => { setF({ ...f, ...s, linkedin: '', notes: '' }); start({ ...s, linkedin: '', notes: '' }) }}>
+                <b>{s.name} · {s.company}</b><span className="tag">{s.title}</span>
+                <span className="what">{s.what}</span>
+              </button>
+            ))}
+          </div>
+          {recent.length > 0 && <div className="panel">
+            <div style={{ padding: '12px 12px 4px' }}><h3>Recent runs</h3></div>
+            <table className="tbl"><tbody>
+              {recent.map(r => <tr key={r.id} className="click" onClick={() => go(`/run/${r.id}`)}>
+                <td><b>{r.name}</b> <span className="muted">· {r.company}</span><div className="faint" style={{ fontSize: 12 }}>{ago(r.created)}</div></td>
+                <td className="r"><Chip s={r.status} /></td>
+              </tr>)}
+            </tbody></table>
+          </div>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+
