@@ -42,16 +42,16 @@ export default function App() {
     <div className="shell">
       <aside className="side">
         <div className="brand">
-          <span className="brand-mark"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M4 14V2h8M4 8h6" stroke="#fff" strokeWidth="2.2" fill="none" /></svg></span>
-          <div><div className="brand-name">Footnote</div><div className="brand-sub">Zamp outbound</div></div>
+          <span className="brand-mark">¹</span>
+          <div className="brand-name">Footnote</div><div className="brand-sub">zamp sdr</div>
         </div>
         <a className={on('/')} href="#/"><Ico d="M8 3v10M3 8h10" />New prospect</a>
-        <div className="nav-label">Drafts</div>
+        <div className="nav-label">drafts</div>
         <a className={on('/runs/review')} href="#/runs/review"><Ico d="M2.5 4.5h11v7h-11zM2.5 4.5l5.5 4 5.5-4" />Review queue {queue > 0 && <span className="count">{queue}</span>}</a>
         <a className={on('/runs')} href="#/runs"><Ico d="M3 4h10M3 8h10M3 12h10" />All prospects</a>
         <div className="side-foot">
           <span className="avatar">NG</span>
-          <div style={{ lineHeight: 1.3 }}><div style={{ fontWeight: 500, fontSize: 13.5 }}>Nitin Gupta</div><div className="muted" style={{ fontSize: 12 }}>Sales development</div></div>
+          <div style={{ lineHeight: 1.3 }}><div style={{ fontWeight: 500, fontSize: 13 }}>Nitin Gupta</div><div className="faint" style={{ fontSize: 11.5 }}>Sales development</div></div>
         </div>
       </aside>
       <main className="main">{page}</main>
