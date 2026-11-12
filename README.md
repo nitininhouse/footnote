@@ -7,7 +7,7 @@ You type a prospect's name and company. Footnote looks them up in Crustdata, pic
 to them now, drafts a short email, and links every factual sentence to the fact it came from. A person
 approves, edits or rejects it. Nothing is ever sent automatically.
 
-- **Live app:** _link added after deploy_
+- **Live app:** https://footnote-qz8g.onrender.com (free hosting: the first visit after a quiet spell takes about a minute to wake up)
 - **Test results:** [docs/EVAL.md](docs/EVAL.md), 11 of 11 cases pass
 
 ## How it works
