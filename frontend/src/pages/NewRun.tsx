@@ -26,8 +26,8 @@ function Specimen() {
       <div className="paper">
         <div className="bar"><span>Draft</span><b>● Ready for review</b></div>
         <div className="meta">
-          <span className="k">to</span><span>Greg Edwards, Interim CFO, Superdry</span>
-          <span className="k">subject</span><span>argentina store</span>
+          <span className="k">To</span><span>Greg Edwards, Interim CFO, Superdry</span>
+          <span className="k">Subject</span><span>argentina store</span>
         </div>
         <div className="body">
           <p>Hi Greg,</p>
