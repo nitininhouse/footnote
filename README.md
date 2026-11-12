@@ -40,7 +40,7 @@ Each step is shown live while it runs, with what it found and why it decided wha
 | **Code checks the AI** | The AI suggests and code verifies. Every factual sentence must cite a real fact id. Every number must appear in what it cites. Sales clichés and over-length drafts are flagged. |
 | **The email fits the business** | A lender gets loan collections and the close. A retailer gets supplier invoices and new countries. The customer proof is the closest match, or is left out entirely. |
 | **A human decides** | Approve, edit (the original is kept) or reject with a reason. The dashboard tracks approval rate, % of sentences with a source, and time to draft. |
-| **Cost control** | Every Crustdata answer is recorded and reused. There is a credit cap per run (6), so one broken run can't spend much. Finding the company is free. Same-name and not-found searches cost nothing, because searches are billed per result returned. |
+| **Fresh data, controlled cost** | Every prospect is looked up live in Crustdata and written fresh by Gemini; nothing is reused from earlier prospects. Within one run an answer is reused, so picking a person doesn't pay twice. There is a credit cap per run (6), so one broken run can't spend much. Finding the company is free. Same-name and not-found searches cost nothing, because searches are billed per result returned. |
 
 ## Edge cases it handles on purpose
 

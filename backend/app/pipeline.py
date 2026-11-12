@@ -104,7 +104,7 @@ class Runner:
 
     def __init__(self, run):
         self.run = run
-        self.client = Client(run["mode"])
+        self.client = Client(run["mode"], run_id=run["id"])
         self.today = d(run["created"]) or date.today()
         self.cur = None
 
@@ -505,7 +505,7 @@ class Runner:
                "guesses about their work, greetings or the ask.")
         data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(self._brief())}\n\n{ask}",
                              tag="agent", prefer="gemini", temperature=0.4, max_tokens=8000,
-                             required=("subject", "body", "hook"))
+                             required=("subject", "body", "hook"), reuse=self.run["mode"] != "live")
         self.log(f"Agent: {meta['model']}{' (cached)' if meta['cached'] else ''}, {meta['ms'] / 1000:.1f} s")
         if meta.get("fallback_reason"):
             self.log(f"Gemini did not answer ({meta['fallback_reason'][:160]}), so {meta['model']} wrote this draft.", "warn")
@@ -637,7 +637,7 @@ def answer(run, option, value=None):
 
 def _replace(run):
     """Find who holds the departed person's role now, then continue with them."""
-    c = Client(run["mode"])
+    c = Client(run["mode"], run_id=run["id"])
     title = run["replace_title"] or ""
     words = [w for w in re.split(r"[,/|&]| and | of ", title) if len(w.strip()) > 2][:3] or [title]
     ids = [x["id"] for x in run.get("company_candidates") or []]

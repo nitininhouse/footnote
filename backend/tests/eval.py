@@ -65,7 +65,7 @@ def main():
     rows, t_all, spent0 = [], time.time(), __import__("app.crust", fromlist=["x"]).spent_today()
     for cid, what, inp, answers, want, want_q in CASES:
         full = {"name": "", "company": "", "title": "", "linkedin": "", "notes": ""} | inp
-        run = store.create(full, "live")
+        run = store.create(full, "replay")   # recorded answers only: free and repeatable
         t0 = time.time()
         runner = pipeline.Runner(run)
         if cid == "not-found":

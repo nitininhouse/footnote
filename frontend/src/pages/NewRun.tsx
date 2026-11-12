@@ -51,7 +51,7 @@ export default function NewRun(_: { cfg: Config | null }) {
         <div>
           <div className="panel panel-pad">
             <h2 style={{ marginBottom: 4 }}>Examples</h2>
-            <p className="muted" style={{ fontSize: 13, margin: '0 0 8px' }}>Click one to fill the form. These are saved, so they cost no credits.</p>
+            <p className="muted" style={{ fontSize: 13, margin: '0 0 8px' }}>Edge cases to try. Click one to fill the form; it runs a fresh lookup like any other prospect.</p>
             {SAMPLES.map(s => (
               <button key={s.name + s.company} type="button" className="example" onClick={() => setF({ name: s.name, company: s.company, title: '', linkedin: '', notes: '' })}>
                 <span><b>{s.name}</b>, {s.company}</span>

@@ -6,12 +6,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 0.0,
+  "secs": 39.5,
   "credits": 0.0,
-  "subject": "300 drone delivery sites",
-  "body": "Hi Sendil,\n\nWalmart and Zipline reached an agreement to add 300 drone delivery sites.\n\nRolling out that many new locations usually brings a huge flood of purchase orders, site contractor bills, and supplier approvals. Who is handling all those requisitions today?\n\nAmgen automated 85% of purchase requisitions through approval with Zamp.\n\nWorth a look as you scale the network?\n\n[Your name]",
-  "hook": "Walmart's agreement to add 300 drone delivery sites is less than a week old and represents massive operational scale. Building out 300 physical sites drives immediate procurement and purchase requisition volume.",
-  "run": "cab805dea7",
+  "subject": "300 delivery sites",
+  "body": "Hi Sendil,\n\nWalmart is expanding drone delivery with 300 Zipline locations. Setting up that many operational sites usually brings a wave of local vendor bills and equipment orders. Who on your team is matching all those new supplier invoices today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
+  "hook": "Walmart adding 300 new drone delivery locations is an immediate operational expansion happening right now. It creates tangible back-office procurement and vendor invoice volume for Zipline's finance team.",
+  "run": "fe1716635f",
   "summary": ""
  },
  {
@@ -21,12 +21,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 0.0,
+  "secs": 36.6,
   "credits": 0.0,
-  "subject": "300 drone sites",
-  "body": "Hi Mac,\n\nWalmart is adding 300 drone delivery sites with Zipline.\n\nRolling out that many launch sites usually means a surge of supplier bills and purchase orders to approve across regions. Who is matching and approving all those orders today?\n\nAmgen automated 85% of purchase requisitions through approval with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
-  "hook": "Walmart adding 300 drone delivery sites is concrete, operational news from just five days ago. It avoids the generic $1.5B funding headline that every other sales rep is using.",
-  "run": "21120d9992",
+  "subject": "300 delivery sites",
+  "body": "Hi Mac,\n\nWalmart is adding 300 drone delivery sites with Zipline. Rolling out hundreds of new locations usually means a flood of purchase orders for hardware and local setups. When spend ramps up that fast, who is reviewing every request to keep budgets in line?\n\nAmgen automated 85% of purchase requisitions through approval with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
+  "hook": "Walmart's agreement to add 300 new drone delivery sites with Zipline was announced just days ago and signals massive operational expansion. For a Head of Strategic Finance, rolling out hundreds of sites creates immediate capital allocation and procurement approval friction.",
+  "run": "0c5df511ca",
   "summary": ""
  },
  {
@@ -36,12 +36,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 0.0,
+  "secs": 39.1,
   "credits": 0.0,
   "subject": "argentina store",
-  "body": "Hi Greg,\n\nSaw Superdry just opened its first store in Argentina. Expanding into new countries usually means a flood of unfamiliar supplier invoices, local taxes, and freight bills hitting finance at once. Who is matching and checking all those store costs today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
-  "hook": "Superdry recently opened its first store in Argentina, marking an expansion into a new international market. For an interim CFO, entering a new country creates immediate finance back-office friction with local suppliers, cross-border freight, and regional tax compliance.",
-  "run": "cb7ce3d9d4",
+  "body": "Hi Greg,\n\nSuperdry opened its first store in Argentina. Expanding retail into a new country usually brings a wave of new local suppliers, store buildout costs, and bills in different formats. Who is matching and keying all those invoices into the system today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nWorth a look?\n\n[Your name]",
+  "hook": "Superdry's entry into Argentina is a recent international retail expansion from late October 2026. For an interim CFO, opening physical stores in a new country creates immediate payables complexity with unfamiliar local suppliers and tax formats.",
+  "run": "f570e6d632",
   "summary": ""
  },
  {
@@ -51,12 +51,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 0.0,
+  "secs": 39.5,
   "credits": 0.0,
   "subject": "melbourne facility",
-  "body": "Hi Sanjiv,\n\nSaw CesiumAstro is adding a manufacturing facility in Melbourne, Florida.\n\nStanding up a new production site usually brings a wave of new supplier contracts, equipment POs, and invoices to reconcile at month-end. Who is matching all those POs to supplier invoices today?\n\nBlock cut 75% of manual steps in its close with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
-  "hook": "CesiumAstro announced a new manufacturing facility in Melbourne, Florida less than a month ago. As Corporate Controller, expanding production infrastructure directly increases Sanjiv's supplier invoice volume and month-end close complexity.",
-  "run": "3d45036636",
+  "body": "Hi Sanjiv,\n\nCesiumAstro is adding a manufacturing facility in Melbourne, Florida.\n\nSetting up a new facility usually brings a wave of new supplier invoices and equipment purchase orders. Who is matching all those new bills today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
+  "hook": "CesiumAstro announced a new manufacturing facility in Melbourne, Florida less than a month ago. For a vertically integrated space hardware maker, opening a new production site creates immediate operational work for accounting around equipment orders and supplier onboarding.",
+  "run": "631313ab0b",
   "summary": ""
  },
  {
@@ -66,12 +66,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 0.0,
+  "secs": 39.7,
   "credits": 0.0,
   "subject": "the rise fund",
-  "body": "Hi Ridhi,\n\nSaw The Rise Fund led a new investment in Arka Fincap.\n\nDeploying more capital usually means loan reconciliations and partner payouts pile up. Who handles that manual work during the close today?\n\nBlock cut 75% of the manual steps in its close with Zamp.\n\nWorth a look before year-end?\n\n[Your name]",
-  "hook": "The Rise Fund led a new investment round in Arka Fincap just four days ago, which is the freshest trigger for expanding lending operations. Because reported round amounts conflict across sources, the hook names the investor rather than an amount.",
-  "run": "20783f2ced",
+  "body": "Hi Ridhi,\n\nSaw Arka Fincap took on fresh funding led by The Rise Fund. Deploying more capital usually means a steep climb in loan disbursements and collections to reconcile for the close. Who handles all those reconciliations across your banking partners today?\n\nBlock cut 75% of the manual steps in its close with Zamp.\n\nWorth a look before year-end?\n\n[Your name]",
+  "hook": "Arka Fincap announced a major funding round led by The Rise Fund just five days ago. For a fast-growing NBFC CFO, rapid capital deployment directly expands loan disbursements and collection volume that must be reconciled.",
+  "run": "7c018bb4e6",
   "summary": ""
  },
  {
@@ -81,12 +81,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 0.0,
+  "secs": 20.0,
   "credits": 0.0,
   "subject": "dublin hq",
-  "body": "Hi Kristin,\n\nSaw Whatnot opened a new European HQ in Dublin.\n\nSetting up operations across Europe usually brings a wave of new local suppliers and bills to sort through. Who is matching and approving all those invoices today?\n\nInstacart cut AP approval time from 2 weeks to 2 days with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
-  "hook": "Whatnot opened its new European headquarters in Dublin just three weeks ago, marking a major international expansion. For a CFO, entering new geographies triggers a surge in local suppliers, regional tax requirements, and vendor approval routing.",
-  "run": "046a47600c",
+  "body": "Hi Kristin,\n\nSaw Whatnot opened a new European HQ in Dublin.\n\nSetting up a European hub usually brings a steady wave of new regional supplier bills and contracts to review. Who on your finance team is keying and matching those today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
+  "hook": "Whatnot opened its new European headquarters in Dublin three weeks ago. As CFO, Kristin has to oversee international operational expansion and the influx of regional suppliers and vendor contracts that comes with it.",
+  "run": "d002459d70",
   "summary": ""
  },
  {
@@ -96,12 +96,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 0.0,
+  "secs": 29.7,
   "credits": 0.0,
   "subject": "argentina store",
-  "body": "Hi Greg,\n\nSaw Superdry opened its first Argentina store.\n\nSetting up retail operations in a new country usually means dealing with dozens of new local suppliers, each billing in their own format and currency. Who on your finance team is matching and keying those in today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
-  "hook": "Superdry recently opened its first store in Argentina, marking an expansion into a new international market. For an Interim CFO, retail store expansion creates immediate back-office operational strain around local supplier setup and invoice processing.",
-  "run": "ab6bbc9c2f",
+  "body": "Hi Greg,\n\nSuperdry opened its first store in Argentina.\n\nExpanding into a new country usually means taking on dozens of local suppliers, from freight to store fittings, each sending bills in different formats. Who is keying and matching those invoices today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
+  "hook": "Superdry opened its first store in Argentina three weeks ago, marking a fresh international market entry. For a retail CFO, launching in a new country brings a sudden influx of local suppliers, freight carriers, and store expenses that hit the accounts payable team.",
+  "run": "8c1cd6c318",
   "summary": ""
  },
  {
@@ -116,7 +116,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "1eda190240",
+  "run": "7e5b327b4a",
   "summary": "Person not found. Rep can paste a profile link"
  },
  {
@@ -131,7 +131,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "0fa7b67f4d",
+  "run": "f6ba0dc637",
   "summary": "Instacart (instacart.com) is already a Zamp customer. Hand this to the account team instead of sending a cold email. No credits were spent."
  },
  {
@@ -146,7 +146,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "627bd90e6a",
+  "run": "52d9c7e1f6",
   "summary": "That LinkedIn link is not a profile link (it should contain linkedin.com/in/)."
  },
  {
@@ -161,7 +161,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "8ce12d0a6c",
+  "run": "052a3d7f60",
   "summary": "Need a full name and a company, or a LinkedIn profile link."
  }
 ]

@@ -1,7 +1,7 @@
 """The only place that talks to a language model (OpenAI-compatible endpoints).
 
-Gemini first, DeepSeek if Gemini fails. Answers are cached by prompt so a replayed
-run gives the same draft and costs nothing. The model never sees instructions from
+Gemini first, DeepSeek if Gemini fails. Live runs always ask the model fresh; answers are
+saved only so the offline test set (replay mode) can be re-run for free. The model never sees instructions from
 fetched text as instructions: sources arrive inside <source> tags and the system
 prompt says to treat them as data.
 """
@@ -41,12 +41,12 @@ def _json(text):
         return fixed
 
 
-def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None, required=()):
+def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None, required=(), reuse=False):
     """Return (parsed_json, meta). `prefer` picks the first model to try ("gemini" or "deepseek");
     the other is the fallback. meta["model"] says which one actually answered."""
     h = hashlib.sha1(json.dumps([system, prompt, temperature, prefer]).encode()).hexdigest()[:16]
     f = config.CACHE / f"llm_{tag}_{h}.json"
-    if f.exists():
+    if reuse and f.exists():      # only the offline test set reuses answers; live runs always ask the model
         rec = json.loads(f.read_text())
         return rec["data"], {"model": rec["model"], "cached": True, "ms": 0, "fallback_reason": rec.get("fallback_reason", "")}
     errors = []

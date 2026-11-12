@@ -1,7 +1,8 @@
 """The only place that talks to Crustdata.
 
-Every answer is stored on disk, keyed by the exact request. In replay mode nothing
-leaves the machine; in live mode only requests never seen before cost credits.
+Live mode always asks Crustdata fresh. An answer is reused only inside the same run (so
+picking a person or following a job change doesn't pay twice). Replay mode answers only
+from recorded responses and is used by the offline test set.
 """
 import hashlib
 import json
@@ -45,13 +46,13 @@ def spent_today():
 class Client:
     """One client per run: knows the mode and counts this run's credits."""
 
-    def __init__(self, mode="replay", cap=config.RUN_CREDIT_CAP):
-        self.mode, self.cap, self.spent, self.calls = mode, cap, 0.0, []
+    def __init__(self, mode="replay", cap=config.RUN_CREDIT_CAP, run_id=None):
+        self.mode, self.cap, self.spent, self.calls, self.run_id = mode, cap, 0.0, [], run_id
 
     def call(self, path, body, estimate=1.0, label=""):
         f = _key(path, body)
-        if f.exists():
-            rec = json.loads(f.read_text())
+        rec = json.loads(f.read_text()) if f.exists() else None
+        if rec and (self.mode != "live" or (self.run_id and rec.get("run") == self.run_id)):
             self.calls.append({"path": path, "label": label, "credits": 0, "cached": True,
                                "recorded_credits": rec.get("credits", 0)})
             return rec["data"]
@@ -81,7 +82,7 @@ class Client:
                                           "credits": credits}) + "\n")
             if r.status_code == 200:
                 data = r.json()
-                f.write_text(json.dumps({"path": path, "body": body, "credits": credits,
+                f.write_text(json.dumps({"path": path, "body": body, "credits": credits, "run": self.run_id,
                                          "at": datetime.now(timezone.utc).isoformat(), "data": data}))
                 self.calls.append({"path": path, "label": label, "credits": credits, "cached": False})
                 return data

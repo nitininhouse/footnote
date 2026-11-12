@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = Path(os.environ.get("FOOTNOTE_DATA") or os.environ.get("HOOKLINE_DATA") or (ROOT / "data"))
-CACHE = DATA / "cache"          # every Crustdata answer ever received, keyed by request
+CACHE = DATA / "cache"          # recorded answers: reused only within one run, or by the offline test set
 DB = DATA / "runs.db"
 
 
@@ -23,8 +23,8 @@ CRUSTDATA_KEY = os.environ.get("CRUSTDATA_API_KEY", "").strip()
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
 DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "").strip()
 
-# "replay": answer only from recorded Crustdata responses (free, can't break in a demo).
-# "live": call Crustdata for anything not recorded yet.
+# "live": every prospect is looked up fresh in Crustdata and written fresh by the model.
+# "replay": answer only from recorded responses (used by the offline test set).
 DEFAULT_MODE = os.environ.get("FOOTNOTE_MODE") or os.environ.get("HOOKLINE_MODE") or "replay"
 ACCESS_CODE = (os.environ.get("FOOTNOTE_ACCESS_CODE") or "").strip()   # required for live runs when set
 

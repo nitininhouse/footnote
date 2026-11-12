@@ -15,7 +15,7 @@ services:
       - key: DEEPSEEK_API_KEY
         sync: false        # optional backup model
       - key: FOOTNOTE_MODE
-        value: live        # recorded answers are always used first; only new lookups cost credits
+        value: live        # every prospect is looked up fresh in Crustdata and written fresh by Gemini
       - key: DAILY_CREDIT_CAP
         value: "0"         # 0 = no daily limit
       - key: RUN_CREDIT_CAP
