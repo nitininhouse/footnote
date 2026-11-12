@@ -16,10 +16,6 @@ function useHash() {
 
 export const go = (p: string) => { location.hash = p }
 
-function Ico({ d }: { d: string }) {
-  return <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
-}
-
 export default function App() {
   const path = useHash()
   const [cfg, setCfg] = useState<Config | null>(null)
@@ -40,20 +36,17 @@ export default function App() {
 
   return (
     <div className="shell">
-      <aside className="side">
-        <div className="brand">
-          <span className="brand-mark">¹</span>
-          <div className="brand-name">Footnote</div><div className="brand-sub">zamp sdr</div>
+      <header className="top">
+        <a className="brand" href="#/"><span className="brand-name">Footnote</span><sup className="brand-mark">1</sup></a>
+        <nav className="top-nav">
+          <a className={on('/runs/review')} href="#/runs/review">Review queue{queue > 0 && <span className="count">{queue}</span>}</a>
+          <a className={on('/runs')} href="#/runs">All prospects</a>
+        </nav>
+        <div className="top-right">
+          <span className="who"><span className="avatar">NG</span>Nitin Gupta</span>
+          <a className="btn primary pill" href="#/">New prospect</a>
         </div>
-        <a className={on('/')} href="#/"><Ico d="M8 3v10M3 8h10" />New prospect</a>
-        <div className="nav-label">drafts</div>
-        <a className={on('/runs/review')} href="#/runs/review"><Ico d="M2.5 4.5h11v7h-11zM2.5 4.5l5.5 4 5.5-4" />Review queue {queue > 0 && <span className="count">{queue}</span>}</a>
-        <a className={on('/runs')} href="#/runs"><Ico d="M3 4h10M3 8h10M3 12h10" />All prospects</a>
-        <div className="side-foot">
-          <span className="avatar">NG</span>
-          <div style={{ lineHeight: 1.3 }}><div style={{ fontWeight: 500, fontSize: 13 }}>Nitin Gupta</div><div className="faint" style={{ fontSize: 11.5 }}>Sales development</div></div>
-        </div>
-      </aside>
+      </header>
       <main className="main">{page}</main>
     </div>
   )

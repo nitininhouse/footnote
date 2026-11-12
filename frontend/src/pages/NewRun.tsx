@@ -22,9 +22,9 @@ function Specimen() {
   )
   return (
     <aside className="specimen">
-      <p className="eyebrow">what you get back · a real draft</p>
+      <p className="eyebrow">What you get back · a real draft</p>
       <div className="paper">
-        <div className="bar"><i /><i /><i /><span>draft · waiting for your review</span></div>
+        <div className="bar"><span>Draft</span><b>● Ready for review</b></div>
         <div className="meta">
           <span className="k">to</span><span>Greg Edwards, Interim CFO, Superdry</span>
           <span className="k">subject</span><span>argentina store</span>
@@ -38,15 +38,10 @@ function Specimen() {
         <div className="notes">
           {NOTES.map(x => (
             <div key={x.n} className={`note${on === x.n ? ' on' : ''}`} onMouseEnter={() => setOn(x.n)} onMouseLeave={() => setOn(0)}>
-              <b>[{x.n}]</b><span>{x.what} <span style={{ opacity: .7 }}>· {x.src}</span></span><span>{x.d}</span>
+              <b>[{x.n}]</b><span>{x.what} <span className="faint">· {x.src}</span></span><span className="d">{x.d}</span>
             </div>
           ))}
         </div>
-      </div>
-      <div className="legend">
-        <span>every fact links to its source</span>
-        <span className="g">numbers checked by code</span>
-        <span className="w">nothing sent without you</span>
       </div>
       <div className="pipeline">
         <div><b>Crustdata</b>profile, company, news, jobs</div>
@@ -76,8 +71,8 @@ export default function NewRun(_: { cfg: Config | null }) {
     <div className="page">
       <div className="page-head">
         <div>
-          <p className="eyebrow">prospect research · live crustdata + gemini</p>
-          <h1>Cold emails where every sentence has a source.</h1>
+          <p className="eyebrow">Prospect research · Crustdata + Gemini</p>
+          <h1>Cold emails where every<br />sentence has a source.</h1>
           <p className="sub">Name a prospect. Footnote reads their profile and company news, picks the one reason to write now, and drafts a short email for you to review.</p>
         </div>
       </div>
@@ -86,13 +81,13 @@ export default function NewRun(_: { cfg: Config | null }) {
           <div className="step">
             <div className="step-head"><span className="n">01</span><span className="t">Who</span></div>
             <div className="form-grid">
-              <div className="field"><label>full name</label><input className="input" value={f.name} onChange={set('name')} placeholder="e.g. Greg Edwards" autoFocus autoComplete="off" /></div>
-              <div className="field"><label>company</label><input className="input" value={f.company} onChange={set('company')} placeholder="e.g. Superdry" autoComplete="off" /></div>
+              <div className="field"><label>Full name</label><input className="input" value={f.name} onChange={set('name')} placeholder="e.g. Greg Edwards" autoFocus autoComplete="off" /></div>
+              <div className="field"><label>Company</label><input className="input" value={f.company} onChange={set('company')} placeholder="e.g. Superdry" autoComplete="off" /></div>
             </div>
             <div className="examples">
               {SAMPLES.map(s => (
-                <button key={s.name + s.company} type="button" className="example" onClick={() => setF({ name: s.name, company: s.company, title: '', linkedin: '', notes: '' })}>
-                  <b>{s.name}, {s.company}</b><span className="what">{s.what}</span>
+                <button key={s.name + s.company} type="button" className="example" title={s.what} onClick={() => setF({ name: s.name, company: s.company, title: '', linkedin: '', notes: '' })}>
+                  <b>{s.name}</b><span className="what">{s.company}</span>
                 </button>
               ))}
             </div>
@@ -100,14 +95,14 @@ export default function NewRun(_: { cfg: Config | null }) {
           <div className="step">
             <div className="step-head"><span className="n">02</span><span className="t">Help it find the right person</span><span className="hint" style={{ marginLeft: 'auto' }}>optional</span></div>
             <div className="form-grid">
-              <div className="field"><label>title</label><input className="input" value={f.title} onChange={set('title')} placeholder="e.g. CFO" autoComplete="off" /></div>
-              <div className="field"><label>linkedin profile</label><input className="input" value={f.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/in/…" autoComplete="off" /><span className="hint">Use it when the name is common. It skips the name search.</span></div>
-              <div className="field wide"><label>notes</label><textarea className="textarea" value={f.notes} onChange={set('notes')} placeholder="Where you met, what you talked about" /><span className="hint">For your own context. Never sent to the prospect.</span></div>
+              <div className="field"><label>Title</label><input className="input" value={f.title} onChange={set('title')} placeholder="e.g. CFO" autoComplete="off" /></div>
+              <div className="field"><label>LinkedIn profile</label><input className="input" value={f.linkedin} onChange={set('linkedin')} placeholder="linkedin.com/in/…" autoComplete="off" /><span className="hint">Use it when the name is common. It skips the name search.</span></div>
+              <div className="field wide"><label>Notes</label><textarea className="textarea" value={f.notes} onChange={set('notes')} placeholder="Where you met, what you talked about" /><span className="hint">For your own context. Never sent to the prospect.</span></div>
             </div>
           </div>
           <div className="form-foot">
             <span className="hint">About a minute. Nothing is sent until you approve it.</span>
-            <button className="btn primary lg" disabled={busy || (!f.linkedin && (!f.name || !f.company))}>{busy ? 'Starting…' : 'Research and draft →'}</button>
+            <button className="btn primary lg" disabled={busy || (!f.linkedin && (!f.name || !f.company))}>{busy ? 'Starting…' : 'Research and draft'}</button>
           </div>
           {err && <div className="banner bad" style={{ margin: '0 20px 16px' }}>{err}</div>}
         </form>

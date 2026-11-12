@@ -30,7 +30,6 @@ export default function Runs({ initialTab }: { initialTab: string }) {
     <div className="page">
       <div className="page-head">
         <div><h1>{tab === 'review' ? 'Review queue' : 'All prospects'}</h1><p className="sub">Everyone you've researched and where each draft stands.</p></div>
-        <button className="btn primary" onClick={() => go('/')}>New prospect</button>
       </div>
       {stats && <div className="stats">
         <div className="stat"><div className="l">Prospects researched</div><div className="v">{stats.runs}</div></div>
