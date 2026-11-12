@@ -34,7 +34,6 @@ export default function Runs({ initialTab }: { initialTab: string }) {
       </div>
       {stats && <div className="stats">
         <div className="stat"><div className="l">Prospects researched</div><div className="v">{stats.runs}</div></div>
-        <div className="stat"><div className="l">Waiting on you</div><div className="v">{stats.awaiting}</div></div>
         <div className="stat"><div className="l">Approval rate</div><div className="v">{pct(stats.approval_rate)}</div></div>
         <div className="stat"><div className="l">Sentences with a source</div><div className="v">{pct(stats.claim_pass)}</div></div>
         <div className="stat"><div className="l">Median time to draft</div><div className="v">{stats.median_ms ? secs(stats.median_ms) : '—'}</div></div>
@@ -48,15 +47,14 @@ export default function Runs({ initialTab }: { initialTab: string }) {
       <div className="panel">
         {rows && shown.length === 0 ? <div className="empty">{rows.length === 0 ? <>No runs yet. <a href="#/">Research your first prospect</a>.</> : 'Nothing here.'}</div> :
           <table className="tbl">
-            <thead><tr><th>Prospect</th><th>Reason to write</th><th>Flags</th><th>Status</th><th className="r">Sourced</th><th className="r">Time</th><th className="r">Created</th></tr></thead>
+            <thead><tr><th>Prospect</th><th>Reason to write</th><th>Flags</th><th>Status</th><th className="r">Sourced</th><th className="r">Created</th></tr></thead>
             <tbody>{shown.map(r => <tr key={r.id} className="click" onClick={() => go(`/run/${r.id}`)}>
               <td><div className="cell-person"><span className="avatar">{initials(r.name)}</span><div><div style={{ fontWeight: 500 }}>{r.name?.replace(/,?\s+(CPA|CIA|CISA)\b,?/g, '')}</div><div className="muted" style={{ fontSize: 12.5 }}>{r.title}{r.company ? `, ${r.company}` : ''}</div></div></div></td>
               <td style={{ maxWidth: 280 }}>{r.hook ? <span className="clamp2" title={r.hook}>{r.hook}</span> : <span className="faint">—</span>}</td>
               <td><div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', maxWidth: 220 }}>{r.edge.filter(e => e !== 'off_topic').map(e => <span key={e} className="tag">{EDGE[e] || e}</span>)}</div></td>
               <td><Chip s={r.status} /></td>
               <td className="r mono">{r.claims ? `${r.claims_ok}/${r.claims}` : '—'}</td>
-              <td className="r mono">{secs(r.ms)}</td>
-              <td className="r muted">{ago(r.created)}</td>
+              <td className="r muted" style={{ whiteSpace: 'nowrap' }}>{ago(r.created)}</td>
             </tr>)}</tbody>
           </table>}
       </div>

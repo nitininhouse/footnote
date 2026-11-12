@@ -162,7 +162,7 @@ function StageDetail({ run, k }: { run: Run; k: string | undefined }) {
         </dl>
       </div>}
       {(k === 'signals' || k === 'hook') && run.signals.length > 0 && <Signals run={run} />}
-      {k === 'guards' && run.checks.length > 0 && <Checks run={run} />}
+      {k === 'factcheck' && run.checks.length > 0 && <Checks run={run} />}
       <div className="panel panel-pad">
         <h3>{s.title} · log</h3>
         <div className="log">
@@ -178,7 +178,7 @@ function Checks({ run }: { run: Run }) {
   const order = { block: 0, warn: 1, pass: 2 }
   const cs = [...run.checks].sort((a, b) => order[a.status] - order[b.status])
   return <div className="panel panel-pad">
-    <h2>Safety checks</h2>
+    <h2>Checks</h2>
     {cs.map((c, i) => <div className="check" key={i}>
       <span><span className={`tag ${c.status === 'block' ? 'bad' : c.status === 'warn' ? 'warn' : 'ok'}`}>{EDGE[c.kind] || c.kind}</span></span>
       <span>{c.title}{c.detail && <div className="d">{c.detail}</div>}</span>
@@ -187,34 +187,27 @@ function Checks({ run }: { run: Run }) {
 }
 
 function Signals({ run }: { run: Run }) {
-  const [showOff, setShowOff] = useState(false)
-  const sig = run.signals.filter(s => showOff || !s.flags.includes('off_topic'))
-    const hookIds = run.hook?.ids ?? (run.hook?.id ? [run.hook.id] : [])
-  const sorted = [...sig].sort((a, b) => (hookIds.includes(b.id) ? 9 : b.fit ?? -1) - (hookIds.includes(a.id) ? 9 : a.fit ?? -1))
-  const off = run.signals.filter(s => s.flags.includes('off_topic')).length
+  const hookIds = run.hook?.ids ?? (run.hook?.id ? [run.hook.id] : [])
+  const rank = (s: Signal) => hookIds.includes(s.id) ? 0 : s.use === 'left out' ? 1 : s.use === 'not chosen' ? 2 : 3
+  const sorted = [...run.signals].sort((a, b) => rank(a) - rank(b))
   return <div className="panel">
-    <div className="panel-pad" style={{ paddingBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
-      <h2>Signals, as the strategist judged them</h2>
-      {off > 0 && <button className="btn sm" onClick={() => setShowOff(!showOff)}>{showOff ? 'Hide' : 'Show'} {off} off-topic</button>}
-    </div>
-    <table className="tbl"><thead><tr><th>Signal</th><th>Date</th><th className="r">Outlets</th><th className="r">Fit</th></tr></thead><tbody>
+    <div className="panel-pad" style={{ paddingBottom: 4 }}><h2>{run.signals.length} facts found</h2></div>
+    <table className="tbl"><thead><tr><th>Fact</th><th>Source</th><th>Date</th></tr></thead><tbody>
       {sorted.map(s => {
         const chosen = hookIds.includes(s.id)
-        return <tr key={s.id} className={chosen ? 'chosen' : s.eligible === false ? 'out' : ''}>
+        const src = s.sources[0]
+        return <tr key={s.id} className={chosen ? 'chosen' : ''}>
           <td>
             <div>{s.label || s.text}</div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 3 }}>
-              <span className="tag">{(s.event_type || s.kind).replace('_', ' ')}</span>
-              {s.flags.filter(f => f !== 'off_topic').map(f => <span key={f} className={`tag ${['sensitive', 'competitor'].includes(f) ? 'bad' : 'warn'}`}>{f}</span>)}
-              {chosen && <span className="tag ok">chosen hook</span>}
-              {!chosen && s.use && s.use !== 'skip' && <span className="tag">{s.use}</span>}
-              {s.reason && <span className="faint" style={{ fontSize: 12 }}>{s.reason}</span>}
-              {s.judge2 && <span className="faint" style={{ fontSize: 12 }}>· bad news? {s.judge1?.model.split('-')[0]}: {s.judge1?.sensitive ? 'yes' : 'no'}, {s.judge2.model.split('-')[0]}: {s.judge2.sensitive ? 'yes' : 'no'}</span>}
-            </div>
+            {(chosen || s.use === 'left out' || s.use === 'not chosen') && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 3 }}>
+              {chosen && <span className="tag ok">Chosen hook</span>}
+              {s.use === 'left out' && <span className="tag bad">Left out</span>}
+              {s.use === 'not chosen' && <span className="tag">Considered</span>}
+              {!chosen && s.reason && <span className="faint" style={{ fontSize: 12 }}>{s.reason}</span>}
+            </div>}
           </td>
+          <td className="muted" style={{ whiteSpace: 'nowrap' }}>{src?.url ? <a href={src.url} target="_blank" rel="noreferrer">{host(src.url) || src.label}</a> : src?.label || 'Crustdata'}</td>
           <td className="mono" style={{ whiteSpace: 'nowrap' }}>{s.date?.slice(0, 10) || '—'}</td>
-          <td className="r mono">{s.kind === 'news' ? s.coverage : ''}</td>
-          <td className="r mono">{s.fit != null ? `${s.fit}/5` : '—'}</td>
         </tr>
       })}
     </tbody></table>
@@ -235,6 +228,7 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
   const [rejecting, setRejecting] = useState(false)
   const [err, setErr] = useState('')
   const [copied, setCopied] = useState(false)
+  const [more, setMore] = useState(false)
   const done = run.status === 'approved' || run.status === 'rejected'
   const ta = useRef<HTMLTextAreaElement>(null)
   useEffect(() => { setSubj(dr.subject); setBody(dr.body) }, [dr.subject, dr.body])
@@ -324,32 +318,34 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
               <span className="muted" style={{ fontSize: 12.5 }}>{dr.words} words</span>
             </> : edit ? <>
               <button className="btn primary" onClick={() => act('save')}>Save edits</button>
-              <button className="btn" onClick={() => { setEdit(false); setSubj(dr.subject); setBody(dr.body) }}>Cancel <span className="kbd">esc</span></button>
+              <button className="btn" onClick={() => { setEdit(false); setSubj(dr.subject); setBody(dr.body) }}>Cancel</button>
             </> : rejecting ? <>
               <input className="input" style={{ flex: 1, minWidth: 200 }} autoFocus placeholder="Why? e.g. wrong angle, too salesy" value={reason} onChange={e => setReason(e.target.value)} />
               <button className="btn danger" onClick={() => act('reject')}>Reject</button>
               <button className="btn" onClick={() => setRejecting(false)}>Cancel</button>
             </> : <>
-              <button className="btn primary" disabled={!!dr.approve_blocked} onClick={() => act('approve')}>Approve <span className="kbd">A</span></button>
-              <button className="btn" onClick={() => setEdit(true)}>Edit <span className="kbd">E</span></button>
-              <button className="btn" onClick={() => setRejecting(true)}>Reject <span className="kbd">R</span></button>
+              <button className="btn primary" disabled={!!dr.approve_blocked} onClick={() => act('approve')}>Approve</button>
+              <button className="btn" onClick={() => setEdit(true)}>Edit</button>
+              <button className="btn" onClick={() => setRejecting(true)}>Reject</button>
               <span className="muted" style={{ marginLeft: 'auto', fontSize: 13 }}>{dr.words} words</span>
             </>}
           </div>
         </div>
         {err && <div className="banner bad" style={{ marginTop: 10 }}>{err}</div>}
-        <div className="panel panel-pad" style={{ marginTop: 16 }}>
-          <h2>Citations</h2>
-          <p className="muted" style={{ fontSize: 13, margin: '-4px 0 8px' }}>Every factual sentence points to where it came from. Hover a sentence to see its source.</p>
-          {dr.claims.map((c, i) => <div className="check" key={i} onMouseEnter={() => setHl(i)} onMouseLeave={() => setHl(null)}>
-            <span><span className={`tag ${c.removed ? '' : c.verdict === 'cited' ? 'ok' : 'warn'}`}>{c.removed ? 'removed' : c.verdict}</span></span>
-            <span>“{c.text}”<div className="d">{c.reason} {claimNums[i].length > 0 && <span className="mono">[{claimNums[i].join(', ')}]</span>}</div></span>
-          </div>)}
-          {(dr.unlisted || []).map((u, i) => <div className="check" key={'u' + i}><span><span className="tag bad">no source</span></span><span>“{u}”</span></div>)}
-          {(dr.issues || []).map((x, i) => <div className="check" key={'i' + i}><span><span className={`tag ${x.severity === 'block' ? 'bad' : 'warn'}`}>{x.severity === 'block' ? 'must fix' : 'note'}</span></span><span>{x.problem}{x.sentence && <div className="d">“{x.sentence}”</div>}</span></div>)}
-          {dr.lint?.length > 0 && <div className="check"><span><span className="tag warn">note</span></span><span>{dr.lint.join('; ')}</span></div>}
-          {dr.original && <details style={{ marginTop: 10 }}><summary className="muted" style={{ cursor: 'pointer' }}>Original draft before edits</summary><div className="email-body" style={{ padding: '10px 0 0', fontSize: 14 }}>{dr.original.body}</div></details>}
-        </div>
+        {(() => {
+          const bad = dr.claims.map((c, i) => ({ c, i })).filter(x => !x.c.removed && x.c.verdict !== 'cited')
+          const any = bad.length || dr.unlisted?.length || dr.issues?.length || dr.lint?.length || dr.original
+          if (!any) return <p className="muted" style={{ fontSize: 13, marginTop: 10 }}>All {dr.claims.length} factual sentences cite a source. Hover one to see it.</p>
+          return <div className="panel panel-pad" style={{ marginTop: 16 }}>
+            <h2>Check before approving</h2>
+            {bad.map(({ c, i }) => <div className="check" key={i} onMouseEnter={() => setHl(i)} onMouseLeave={() => setHl(null)}>
+              <span><span className="tag warn">no source</span></span><span>“{c.text}”<div className="d">{c.reason}</div></span></div>)}
+            {(dr.unlisted || []).map((u, i) => <div className="check" key={'u' + i}><span><span className="tag bad">no source</span></span><span>“{u}”</span></div>)}
+            {(dr.issues || []).map((x, i) => <div className="check" key={'i' + i}><span><span className={`tag ${x.severity === 'block' ? 'bad' : 'warn'}`}>{x.severity === 'block' ? 'must fix' : 'note'}</span></span><span>{x.problem}{x.sentence && <div className="d">“{x.sentence}”</div>}</span></div>)}
+            {(dr.lint || []).map((l, i) => <div className="check" key={'l' + i}><span><span className="tag warn">note</span></span><span>{l}</span></div>)}
+            {dr.original && <details style={{ marginTop: 10 }}><summary className="muted" style={{ cursor: 'pointer' }}>Original draft before edits</summary><div className="email-body" style={{ padding: '10px 0 0', fontSize: 14 }}>{dr.original.body}</div></details>}
+          </div>
+        })()}
       </div>
 
       {/* hook */}
@@ -357,15 +353,15 @@ function Review({ run, setRun }: { run: Run; setRun: (r: Run) => void }) {
         <h2>Why this hook</h2>
         {hooks.length > 0 ? <div className="hook-card">
           {hooks.map(h => <div key={h.id} style={{ fontWeight: 500 }}>{h.label || h.text}</div>)}
-          {run.hook?.angle && <div className="muted" style={{ fontSize: 13, margin: '6px 0' }}>{run.hook.angle}</div>}
-          {run.hook?.why && <div style={{ fontSize: 13 }}>{run.hook.why}</div>}
+          {run.hook?.why && <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>{run.hook.why}</div>}
           <div className="faint" style={{ fontSize: 12.5, marginTop: 8 }}>Confidence: {run.hook?.confidence}</div>
         </div> : <div className="muted">No hook was strong enough.</div>}
         {notChosen.length > 0 && <h3 style={{ marginTop: 16 }}>Other options considered</h3>}
-        {notChosen.map(s => <div key={s.id} className="rej">
+        {notChosen.slice(0, more ? 9 : 3).map(s => <div key={s.id} className="rej">
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}><span>{s.label || s.text}</span>{s.use === 'left out' && <span className="tag bad" style={{ flexShrink: 0 }}>Left out</span>}</div>
           <div className="why">{s.reason}</div>
         </div>)}
+        {notChosen.length > 3 && <button className="btn sm" style={{ marginTop: 8 }} onClick={() => setMore(!more)}>{more ? 'Show fewer' : `Show ${notChosen.length - 3} more`}</button>}
         {run.checks.some(c => c.status !== 'pass') && <h3 style={{ marginTop: 16 }}>Flags</h3>}
         {run.checks.filter(c => c.status !== 'pass' || c.kind === 'identity').slice(0, 8).map((c, i) =>
           <div key={i} className="rej"><span className={`tag ${c.status === 'block' ? 'bad' : c.status === 'warn' ? 'warn' : 'ok'}`}>{EDGE[c.kind] || c.kind}</span> <span className="why">{c.title}</span></div>)}

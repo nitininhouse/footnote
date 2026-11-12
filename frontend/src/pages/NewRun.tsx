@@ -1,20 +1,18 @@
-import { useEffect, useState } from 'react'
-import { api, ago, type Config, type Row } from '../api'
+import { useState } from 'react'
+import { api, type Config } from '../api'
 import { go } from '../App'
-import { Chip, initials } from './bits'
 
 const SAMPLES = [
-  { name: 'Sendil Palani', company: 'Zipline', title: 'CFO', what: 'New CFO (ex-Tesla). The $1.5B round ran on 55 outlets, so it becomes context and the email opens on his first months and the Walmart expansion.' },
-  { name: 'Kristin Schaefer', company: 'Whatnot', title: 'CFO', what: 'Sources disagree on the funding amount and a sensitive story is blocked; it opens on the new Dublin HQ.' },
-  { name: 'Kristin Schaefer', company: 'Atomic', title: 'General Partner', what: 'Job change: she left Atomic in May 2026. The process stops and offers to follow her.' },
+  { name: 'Greg Edwards', company: 'Superdry', what: 'Normal case: a retailer opening its first store in Argentina.' },
+  { name: 'Mac Kern', company: 'Zipline', what: 'Two people with this name work there. You pick the right one.' },
+  { name: 'Kristin Schaefer', company: 'Postmates', what: 'She left the company. You choose to follow her, find who has the role now, or stop.' },
+  { name: 'Jane Doe', company: 'Instacart', what: 'Already a Zamp customer. Stops before any lookup is paid for.' },
 ]
 
 export default function NewRun(_: { cfg: Config | null }) {
   const [f, setF] = useState({ name: '', company: '', title: '', linkedin: '', notes: '' })
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
-  const [recent, setRecent] = useState<Row[]>([])
-  useEffect(() => { api.runs().then(r => setRecent(r.slice(0, 6))).catch(() => {}) }, [])
 
   async function start(v = f) {
     setErr(''); setBusy(true)
@@ -50,25 +48,17 @@ export default function NewRun(_: { cfg: Config | null }) {
           {err && <div className="banner bad" style={{ marginTop: 12, marginBottom: 0 }}>{err}</div>}
         </form>
 
-        <div style={{ display: 'grid', gap: 16 }}>
+        <div>
           <div className="panel panel-pad">
             <h2 style={{ marginBottom: 4 }}>Examples</h2>
-            <p className="muted" style={{ fontSize: 13, margin: '0 0 8px' }}>Click one to fill the form.</p>
+            <p className="muted" style={{ fontSize: 13, margin: '0 0 8px' }}>Click one to fill the form. These are saved, so they cost no credits.</p>
             {SAMPLES.map(s => (
-              <button key={s.company} type="button" className="example" onClick={() => setF({ name: s.name, company: s.company, title: s.title, linkedin: '', notes: '' })}>
+              <button key={s.name + s.company} type="button" className="example" onClick={() => setF({ name: s.name, company: s.company, title: '', linkedin: '', notes: '' })}>
                 <span><b>{s.name}</b>, {s.company}</span>
                 <span className="what">{s.what}</span>
               </button>
             ))}
           </div>
-          {recent.length > 0 && <div className="panel">
-            <div className="panel-head" style={{ paddingBottom: 10 }}><h2 style={{ margin: 0 }}>Recent</h2><a href="#/runs" style={{ fontSize: 13 }}>View all</a></div>
-            {recent.map(r => <div key={r.id} className="recent-row" onClick={() => go(`/run/${r.id}`)}>
-              <span className="avatar">{initials(r.name)}</span>
-              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 500 }}>{r.name?.replace(/,?\s+(CPA|CIA|CISA)\b,?/g, '')}</div><div className="muted" style={{ fontSize: 12.5 }}>{r.company} · {ago(r.created)}</div></div>
-              <Chip s={r.status} />
-            </div>)}
-          </div>}
         </div>
       </div>
     </div>

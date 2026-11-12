@@ -9,10 +9,6 @@ export function Icon({ status }: { status: string }) {
   return <span className={`icon ${status}`} />
 }
 
-export function Score({ label, v, max = 5 }: { label: string; v: number; max?: number }) {
-  return <div className="score-bar"><span>{label}</span><span className="bar"><i style={{ width: `${Math.max(0, Math.min(1, v / max)) * 100}%` }} /></span><span className="mono r">{v.toFixed(1)}</span></div>
-}
-
 export function host(u: string | null | undefined) {
   if (!u) return ''
   try { return new URL(u).hostname.replace(/^www\./, '') } catch { return '' }
