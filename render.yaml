@@ -17,8 +17,8 @@ services:
       - key: FOOTNOTE_MODE
         value: live        # recorded answers are always used first; only new lookups cost credits
       - key: DAILY_CREDIT_CAP
-        value: "30"
+        value: "0"         # 0 = no daily limit
       - key: RUN_CREDIT_CAP
         value: "6"
       - key: RUNS_PER_VISITOR
-        value: "15"
+        value: "0"         # 0 = no limit

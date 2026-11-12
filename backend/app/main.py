@@ -75,7 +75,7 @@ def get_config():
 def new_run(body: NewRun, request: Request):
     who, now = visitor(request), time.time()
     _visits[who] = [t for t in _visits[who] if now - t < 86400]
-    if len(_visits[who]) >= config.RUNS_PER_VISITOR:
+    if config.RUNS_PER_VISITOR and len(_visits[who]) >= config.RUNS_PER_VISITOR:
         raise HTTPException(429, f"You've researched {config.RUNS_PER_VISITOR} prospects today. Try again tomorrow, "
                                  "or open one of the existing runs.")
     _visits[who].append(now)

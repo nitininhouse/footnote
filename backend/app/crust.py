@@ -61,7 +61,7 @@ class Client:
             raise CrustError("Crustdata key is not set on the server.", "config")
         if self.spent + estimate > self.cap:
             raise CrustError(f"Run credit cap reached ({self.cap}).", "budget")
-        if spent_today() + estimate > config.DAILY_CREDIT_CAP:
+        if config.DAILY_CREDIT_CAP and spent_today() + estimate > config.DAILY_CREDIT_CAP:
             raise CrustError("Today's credit budget is used up. Replay mode still works.", "budget")
         last = None
         for attempt in range(3):

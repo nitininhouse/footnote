@@ -30,8 +30,8 @@ ACCESS_CODE = (os.environ.get("FOOTNOTE_ACCESS_CODE") or "").strip()   # require
 
 # Credit guards (Crustdata bills per call, and per result on searches)
 RUN_CREDIT_CAP = float(os.environ.get("RUN_CREDIT_CAP", "6"))
-DAILY_CREDIT_CAP = float(os.environ.get("DAILY_CREDIT_CAP", "40"))
-RUNS_PER_VISITOR = int(os.environ.get("RUNS_PER_VISITOR", "15"))   # new prospects per visitor per day (public demo)
+DAILY_CREDIT_CAP = float(os.environ.get("DAILY_CREDIT_CAP", "0"))   # 0 = no daily limit
+RUNS_PER_VISITOR = int(os.environ.get("RUNS_PER_VISITOR", "0"))   # new prospects per visitor per day; 0 = no limit
 PEOPLE_PER_SEARCH = 5
 JOBS_PER_SEARCH = 6
 
