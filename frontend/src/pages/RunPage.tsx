@@ -59,7 +59,7 @@ export default function RunPage({ id }: { id: string }) {
           <div className="who">{cleanName(p?.name || run.input.name) || 'Prospect'}</div>
           <div className="run-meta">
             <span>{p?.title || run.input.title}{(run.company?.name || run.input.company) && <> at <b style={{ color: 'var(--ink)' }}>{run.company?.name || run.input.company}</b></>}</span>
-            {p?.tenure_days != null && <span>{p.tenure_days} days in role</span>}
+            {p?.tenure_days != null && <span>{tenure(p.tenure_days)} in role</span>}
             {p?.url && <a href={p.url} target="_blank" rel="noreferrer">LinkedIn</a>}
           </div>
           </div>
@@ -386,4 +386,9 @@ function Marked({ body, claims, nums, hl, setHl, tone }: { body: string; claims:
     : <span key={k} className={`claim ${tone(claims[p.i])} ${hl === p.i ? 'hl' : ''}`} onMouseEnter={() => setHl(p.i)} onMouseLeave={() => setHl(null)}>{p.t}<sup>{nums[p.i].join(',')}</sup></span>)}</>
 }
 
-
+function tenure(days: number) {
+  const y = Math.floor(days / 365), m = Math.floor((days % 365) / 30.4)
+  const part = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`
+  if (y === 0) return m === 0 ? part(days, 'day') : part(m, 'month')
+  return m ? `${part(y, 'year')} ${part(m, 'month')}` : part(y, 'year')
+}

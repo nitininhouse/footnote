@@ -1,18 +1,18 @@
 # Test set results
 
-11/11 cases reached the expected outcome. 7 drafts written; Crustdata credits spent on this run: 0.00 (recorded answers are reused). Total time 236 s.
+11/11 cases reached the expected outcome. 7 drafts written; Crustdata credits spent on this run: 0.00 (recorded answers are reused). Total time 0 s.
 
 Re-run: `cd backend && ../.venv/bin/python -m tests.eval`. Time is near 0 s when every Crustdata and model answer was already recorded; a first live run takes 25 to 60 s per prospect.
 
 | Case | What it shows | Expected | Got | Pass | Time |
 |---|---|---|---|---|---|
-| vp-finance | Normal case: VP Finance, drone company | ready | ready | yes | 29.8 s |
-| namesake | Two Mac Kern profiles at Zipline: rep picks the right one | ready (after pick_person) | ready | yes | 35.3 s |
-| retail-new-country | Retailer opening a new country | ready | ready | yes | 30.2 s |
-| acquisitions | LinkedIn link given; CPA suffix in the name | ready | ready | yes | 37.9 s |
-| indian-lender | Indian NBFC: lender pains, no rupee conversion, fresh round | ready | ready | yes | 47.2 s |
-| job-change | Person left the company; rep follows them to the new job | ready (after job_change) | ready | yes | 26.0 s |
-| injection | Rep notes contain a prompt injection | ready | ready | yes | 29.4 s |
+| vp-finance | Normal case: VP Finance, drone company | ready | ready | yes | 0.0 s |
+| namesake | Two Mac Kern profiles at Zipline: rep picks the right one | ready (after pick_person) | ready | yes | 0.0 s |
+| retail-new-country | Retailer opening a new country | ready | ready | yes | 0.0 s |
+| acquisitions | LinkedIn link given; CPA suffix in the name | ready | ready | yes | 0.0 s |
+| indian-lender | Indian NBFC: lender pains, no rupee conversion, fresh round | ready | ready | yes | 0.0 s |
+| job-change | Person left the company; rep follows them to the new job | ready (after job_change) | ready | yes | 0.0 s |
+| injection | Rep notes contain a prompt injection | ready | ready | yes | 0.0 s |
 | not-found | Person not at the company, now or before: ask for a LinkedIn link | stopped (after not_found) | stopped | yes | 0.0 s |
 | customer | Existing Zamp customer: stop before spending credits | blocked | blocked | yes | 0.0 s |
 | bad-link | Pasted a company page instead of a profile | blocked | blocked | yes | 0.0 s |

@@ -6,12 +6,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 29.8,
+  "secs": 0.0,
   "credits": 0.0,
   "subject": "300 new sites",
   "body": "Hi Sendil,\n\nSaw Zipline is adding 300 new delivery sites for Walmart. Building out that many locations usually means a flood of new supplier invoices to check and approve. Who is auditing all of those today?\n\nUber Freight cut invoice audit time from 1 day to 1 hour with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
   "hook": "The addition of 300 new delivery sites for Walmart is a massive, concrete operational expansion that directly impacts the finance back-office. It creates a highly specific, logical opening to discuss the surge in supplier invoices and audit workload.",
-  "run": "3a55698578",
+  "run": "a26a03e3c1",
   "summary": ""
  },
  {
@@ -21,12 +21,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 35.3,
+  "secs": 0.0,
   "credits": 0.0,
   "subject": "300 new sites",
   "body": "Hi Mac,\n\nSaw Walmart is adding 300 new Zipline delivery sites. Building out that much infrastructure usually means a flood of new purchase orders and supplier invoices. Who is matching all those bills today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
   "hook": "The Walmart deal is a massive operational expansion that directly causes back-office finance work like procurement and AP. It also avoids the generic funding round hook that every other sales rep will use.",
-  "run": "6c7dbf9983",
+  "run": "0cad212e58",
   "summary": ""
  },
  {
@@ -36,12 +36,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 30.2,
+  "secs": 0.0,
   "credits": 0.0,
   "subject": "argentina store",
   "body": "Hi Greg,\n\nSaw Superdry opened its first store in Argentina. Moving into a new country usually brings a wave of new local suppliers, and each one sends invoices in its own format. Who is keying those in today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
   "hook": "Opening a store in a new country is a major retail milestone that directly impacts the finance back-office. It introduces new local suppliers, currencies, and invoice formats, creating immediate manual work for the AP team.",
-  "run": "3696046056",
+  "run": "b31a487b11",
   "summary": ""
  },
  {
@@ -51,12 +51,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 37.9,
+  "secs": 0.0,
   "credits": 0.0,
   "subject": "recent acquisitions",
   "body": "Hi Sanjiv,\n\nSaw CesiumAstro acquired 1Aardvark and Jariet Technologies recently. Integrating new businesses into your accounting processes usually means your team is stuck manually reconciling different sets of books to get the month-end close done.\n\nBlock removed 75% of human touchpoints in the accounting close with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
   "hook": "Integrating multiple acquired companies is a massive headache for a Corporate Controller, directly impacting the month-end close. It is specific, recent, and ties perfectly to the Block case study.",
-  "run": "c9e60b3d2c",
+  "run": "48b7052a2e",
   "summary": ""
  },
  {
@@ -66,12 +66,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 47.2,
+  "secs": 0.0,
   "credits": 0.0,
   "subject": "team growth",
   "body": "Hi Ridhi,\n\nSaw Arka Fincap grew to 1,245 employees, up 70% in the last 12 months. Scaling an NBFC that fast usually means a heavier month-end close to reconcile all those new loan disbursements and collections.\n\nBlock cut 75% of the manual steps in its accounting close with Zamp.\n\nIs this on your list for 2027?\n\n[Your name]",
   "hook": "The 70% headcount growth is a strong, specific indicator of rapid scaling. I skipped the recent funding round because multiple outlets reported it, meaning every other sales rep will use it in their opening.",
-  "run": "def11e08dd",
+  "run": "4b7a0cba5b",
   "summary": ""
  },
  {
@@ -81,12 +81,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 26.0,
+  "secs": 0.0,
   "credits": 0.0,
   "subject": "dublin hq",
   "body": "Hi Kristin,\n\nSaw Whatnot is opening a new European HQ in Dublin. Expanding into new countries usually means a much heavier month-end close as your team has to match invoices and reconcile payouts across different sets of books.\n\nBlock cut 75% of the manual steps in its close with Zamp.\n\nOpen to seeing how?\n\n[Your name]",
   "hook": "Opening a new European HQ in Dublin is a major international expansion for Whatnot. For a CFO, expanding into new countries means managing multiple currencies and local books, which directly complicates the month-end close.",
-  "run": "b084fc11e9",
+  "run": "4e696795f8",
   "summary": ""
  },
  {
@@ -96,12 +96,12 @@
   "got": "ready",
   "pass": true,
   "problems": [],
-  "secs": 29.4,
+  "secs": 0.0,
   "credits": 0.0,
   "subject": "argentina store",
   "body": "Hi Greg,\n\nSaw Superdry opened its first store in Argentina. Expanding into new countries usually means a wave of new local suppliers, and each one sends invoices in its own format. Who is keying those in today?\n\nMindbody processes 95%+ of invoices end to end with Zamp.\n\nWorth a look?\n\n[Your name]",
   "hook": "Opening a store in a new country is a strategic milestone for a CFO. It directly creates finance back-office work by introducing new local suppliers, taxes, and invoice formats.",
-  "run": "54a56d362f",
+  "run": "3178795907",
   "summary": ""
  },
  {
@@ -116,7 +116,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "d816dd0650",
+  "run": "19e69bd092",
   "summary": "Person not found. Rep can paste a profile link"
  },
  {
@@ -131,7 +131,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "5b0ab96b4a",
+  "run": "6b45cf715f",
   "summary": "Instacart (instacart.com) is already a Zamp customer. Hand this to the account team instead of sending a cold email. No credits were spent."
  },
  {
@@ -146,7 +146,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "edc10f2cb3",
+  "run": "c6a1fd9d9e",
   "summary": "That LinkedIn link is not a profile link (it should contain linkedin.com/in/)."
  },
  {
@@ -161,7 +161,7 @@
   "subject": null,
   "body": null,
   "hook": null,
-  "run": "587eac35ca",
+  "run": "ce0efcf127",
   "summary": "Need a full name and a company, or a LinkedIn profile link."
  }
 ]

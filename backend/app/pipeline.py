@@ -249,9 +249,12 @@ class Runner:
             co = next((c for c in cands if c["id"] == job.get("crustdata_company_id")), cands[0])
             self.run["company"] = co
             if len(cands) > 1:
-                others = ", ".join(c["domain"] or c["name"] for c in cands if c["id"] != co["id"])
-                self.check("identity", "pass", f"Picked {co['domain']} over {others}",
-                           f"{p['basic_profile']['name']}'s current job is at {co['domain']}.")
+                rest = [c for c in cands if c["id"] != co["id"]]
+                named = [c["domain"] for c in rest if c["domain"]][:2]
+                self.check("identity", "pass",
+                           f"Picked {co['domain']} over {len(rest)} other compan{'y' if len(rest) == 1 else 'ies'} with this name",
+                           f"{p['basic_profile']['name']}'s current job is at {co['domain']}."
+                           + (f" Others included {', '.join(named)}." if named else ""))
             self.log(f"Found {p['basic_profile']['name']}, {job.get('title')} (profile {self.run['person_url']})")
             return f"{p['basic_profile']['name']} · {job.get('title')}"
         if len(people) > 1:
