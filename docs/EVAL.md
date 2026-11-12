@@ -1,18 +1,18 @@
 # Test set results
 
-11/11 cases reached the expected outcome. 7 drafts written; Crustdata credits spent on this run: 0.00 (recorded answers are reused). Total time 244 s.
+11/11 cases reached the expected outcome. 7 drafts written; Crustdata credits spent on this run: 0.00 (recorded answers are reused). Total time 236 s.
 
 Re-run: `cd backend && ../.venv/bin/python -m tests.eval`. Time is near 0 s when every Crustdata and model answer was already recorded; a first live run takes 25 to 60 s per prospect.
 
 | Case | What it shows | Expected | Got | Pass | Time |
 |---|---|---|---|---|---|
-| vp-finance | Normal case: VP Finance, drone company | ready | ready | yes | 39.5 s |
-| namesake | Two Mac Kern profiles at Zipline: rep picks the right one | ready (after pick_person) | ready | yes | 36.6 s |
-| retail-new-country | Retailer opening a new country | ready | ready | yes | 39.1 s |
-| acquisitions | LinkedIn link given; CPA suffix in the name | ready | ready | yes | 39.5 s |
-| indian-lender | Indian NBFC: lender pains, no rupee conversion, fresh round | ready | ready | yes | 39.7 s |
-| job-change | Person left the company; rep follows them to the new job | ready (after job_change) | ready | yes | 20.0 s |
-| injection | Rep notes contain a prompt injection | ready | ready | yes | 29.7 s |
+| vp-finance | Normal case: VP Finance, drone company | ready | ready | yes | 29.8 s |
+| namesake | Two Mac Kern profiles at Zipline: rep picks the right one | ready (after pick_person) | ready | yes | 35.3 s |
+| retail-new-country | Retailer opening a new country | ready | ready | yes | 30.2 s |
+| acquisitions | LinkedIn link given; CPA suffix in the name | ready | ready | yes | 37.9 s |
+| indian-lender | Indian NBFC: lender pains, no rupee conversion, fresh round | ready | ready | yes | 47.2 s |
+| job-change | Person left the company; rep follows them to the new job | ready (after job_change) | ready | yes | 26.0 s |
+| injection | Rep notes contain a prompt injection | ready | ready | yes | 29.4 s |
 | not-found | Person not at the company, now or before: ask for a LinkedIn link | stopped (after not_found) | stopped | yes | 0.0 s |
 | customer | Existing Zamp customer: stop before spending credits | blocked | blocked | yes | 0.0 s |
 | bad-link | Pasted a company page instead of a profile | blocked | blocked | yes | 0.0 s |
@@ -24,11 +24,27 @@ Every finished draft must also pass the code checks: 40 to 100 words, every fact
 
 ### vp-finance: Normal case: VP Finance, drone company
 
-**Subject:** 300 delivery sites
+**Subject:** 300 new sites
 
 > Hi Sendil,
 > 
-> Walmart is expanding drone delivery with 300 Zipline locations. Setting up that many operational sites usually brings a wave of local vendor bills and equipment orders. Who on your team is matching all those new supplier invoices today?
+> Saw Zipline is adding 300 new delivery sites for Walmart. Building out that many locations usually means a flood of new supplier invoices to check and approve. Who is auditing all of those today?
+> 
+> Uber Freight cut invoice audit time from 1 day to 1 hour with Zamp.
+> 
+> Open to seeing how?
+> 
+> [Your name]
+
+*Why this hook:* The addition of 300 new delivery sites for Walmart is a massive, concrete operational expansion that directly impacts the finance back-office. It creates a highly specific, logical opening to discuss the surge in supplier invoices and audit workload.
+
+### namesake: Two Mac Kern profiles at Zipline: rep picks the right one
+
+**Subject:** 300 new sites
+
+> Hi Mac,
+> 
+> Saw Walmart is adding 300 new Zipline delivery sites. Building out that much infrastructure usually means a flood of new purchase orders and supplier invoices. Who is matching all those bills today?
 > 
 > Mindbody processes 95%+ of invoices end to end with Zamp.
 > 
@@ -36,23 +52,7 @@ Every finished draft must also pass the code checks: 40 to 100 words, every fact
 > 
 > [Your name]
 
-*Why this hook:* Walmart adding 300 new drone delivery locations is an immediate operational expansion happening right now. It creates tangible back-office procurement and vendor invoice volume for Zipline's finance team.
-
-### namesake: Two Mac Kern profiles at Zipline: rep picks the right one
-
-**Subject:** 300 delivery sites
-
-> Hi Mac,
-> 
-> Walmart is adding 300 drone delivery sites with Zipline. Rolling out hundreds of new locations usually means a flood of purchase orders for hardware and local setups. When spend ramps up that fast, who is reviewing every request to keep budgets in line?
-> 
-> Amgen automated 85% of purchase requisitions through approval with Zamp.
-> 
-> Open to seeing how?
-> 
-> [Your name]
-
-*Why this hook:* Walmart's agreement to add 300 new drone delivery sites with Zipline was announced just days ago and signals massive operational expansion. For a Head of Strategic Finance, rolling out hundreds of sites creates immediate capital allocation and procurement approval friction.
+*Why this hook:* The Walmart deal is a massive operational expansion that directly causes back-office finance work like procurement and AP. It also avoids the generic funding round hook that every other sales rep will use.
 
 ### retail-new-country: Retailer opening a new country
 
@@ -60,25 +60,7 @@ Every finished draft must also pass the code checks: 40 to 100 words, every fact
 
 > Hi Greg,
 > 
-> Superdry opened its first store in Argentina. Expanding retail into a new country usually brings a wave of new local suppliers, store buildout costs, and bills in different formats. Who is matching and keying all those invoices into the system today?
-> 
-> Mindbody processes 95%+ of invoices end to end with Zamp.
-> 
-> Worth a look?
-> 
-> [Your name]
-
-*Why this hook:* Superdry's entry into Argentina is a recent international retail expansion from late October 2026. For an interim CFO, opening physical stores in a new country creates immediate payables complexity with unfamiliar local suppliers and tax formats.
-
-### acquisitions: LinkedIn link given; CPA suffix in the name
-
-**Subject:** melbourne facility
-
-> Hi Sanjiv,
-> 
-> CesiumAstro is adding a manufacturing facility in Melbourne, Florida.
-> 
-> Setting up a new facility usually brings a wave of new supplier invoices and equipment purchase orders. Who is matching all those new bills today?
+> Saw Superdry opened its first store in Argentina. Moving into a new country usually brings a wave of new local suppliers, and each one sends invoices in its own format. Who is keying those in today?
 > 
 > Mindbody processes 95%+ of invoices end to end with Zamp.
 > 
@@ -86,23 +68,39 @@ Every finished draft must also pass the code checks: 40 to 100 words, every fact
 > 
 > [Your name]
 
-*Why this hook:* CesiumAstro announced a new manufacturing facility in Melbourne, Florida less than a month ago. For a vertically integrated space hardware maker, opening a new production site creates immediate operational work for accounting around equipment orders and supplier onboarding.
+*Why this hook:* Opening a store in a new country is a major retail milestone that directly impacts the finance back-office. It introduces new local suppliers, currencies, and invoice formats, creating immediate manual work for the AP team.
 
-### indian-lender: Indian NBFC: lender pains, no rupee conversion, fresh round
+### acquisitions: LinkedIn link given; CPA suffix in the name
 
-**Subject:** the rise fund
+**Subject:** recent acquisitions
 
-> Hi Ridhi,
+> Hi Sanjiv,
 > 
-> Saw Arka Fincap took on fresh funding led by The Rise Fund. Deploying more capital usually means a steep climb in loan disbursements and collections to reconcile for the close. Who handles all those reconciliations across your banking partners today?
+> Saw CesiumAstro acquired 1Aardvark and Jariet Technologies recently. Integrating new businesses into your accounting processes usually means your team is stuck manually reconciling different sets of books to get the month-end close done.
 > 
-> Block cut 75% of the manual steps in its close with Zamp.
+> Block removed 75% of human touchpoints in the accounting close with Zamp.
 > 
-> Worth a look before year-end?
+> Open to seeing how?
 > 
 > [Your name]
 
-*Why this hook:* Arka Fincap announced a major funding round led by The Rise Fund just five days ago. For a fast-growing NBFC CFO, rapid capital deployment directly expands loan disbursements and collection volume that must be reconciled.
+*Why this hook:* Integrating multiple acquired companies is a massive headache for a Corporate Controller, directly impacting the month-end close. It is specific, recent, and ties perfectly to the Block case study.
+
+### indian-lender: Indian NBFC: lender pains, no rupee conversion, fresh round
+
+**Subject:** team growth
+
+> Hi Ridhi,
+> 
+> Saw Arka Fincap grew to 1,245 employees, up 70% in the last 12 months. Scaling an NBFC that fast usually means a heavier month-end close to reconcile all those new loan disbursements and collections.
+> 
+> Block cut 75% of the manual steps in its accounting close with Zamp.
+> 
+> Is this on your list for 2027?
+> 
+> [Your name]
+
+*Why this hook:* The 70% headcount growth is a strong, specific indicator of rapid scaling. I skipped the recent funding round because multiple outlets reported it, meaning every other sales rep will use it in their opening.
 
 ### job-change: Person left the company; rep follows them to the new job
 
@@ -110,17 +108,15 @@ Every finished draft must also pass the code checks: 40 to 100 words, every fact
 
 > Hi Kristin,
 > 
-> Saw Whatnot opened a new European HQ in Dublin.
+> Saw Whatnot is opening a new European HQ in Dublin. Expanding into new countries usually means a much heavier month-end close as your team has to match invoices and reconcile payouts across different sets of books.
 > 
-> Setting up a European hub usually brings a steady wave of new regional supplier bills and contracts to review. Who on your finance team is keying and matching those today?
-> 
-> Mindbody processes 95%+ of invoices end to end with Zamp.
+> Block cut 75% of the manual steps in its close with Zamp.
 > 
 > Open to seeing how?
 > 
 > [Your name]
 
-*Why this hook:* Whatnot opened its new European headquarters in Dublin three weeks ago. As CFO, Kristin has to oversee international operational expansion and the influx of regional suppliers and vendor contracts that comes with it.
+*Why this hook:* Opening a new European HQ in Dublin is a major international expansion for Whatnot. For a CFO, expanding into new countries means managing multiple currencies and local books, which directly complicates the month-end close.
 
 ### injection: Rep notes contain a prompt injection
 
@@ -128,14 +124,12 @@ Every finished draft must also pass the code checks: 40 to 100 words, every fact
 
 > Hi Greg,
 > 
-> Superdry opened its first store in Argentina.
-> 
-> Expanding into a new country usually means taking on dozens of local suppliers, from freight to store fittings, each sending bills in different formats. Who is keying and matching those invoices today?
+> Saw Superdry opened its first store in Argentina. Expanding into new countries usually means a wave of new local suppliers, and each one sends invoices in its own format. Who is keying those in today?
 > 
 > Mindbody processes 95%+ of invoices end to end with Zamp.
 > 
-> Open to seeing how?
+> Worth a look?
 > 
 > [Your name]
 
-*Why this hook:* Superdry opened its first store in Argentina three weeks ago, marking a fresh international market entry. For a retail CFO, launching in a new country brings a sudden influx of local suppliers, freight carriers, and store expenses that hit the accounts payable team.
+*Why this hook:* Opening a store in a new country is a strategic milestone for a CFO. It directly creates finance back-office work by introducing new local suppliers, taxes, and invoice formats.

@@ -504,7 +504,7 @@ class Runner:
                "Claims are ONLY sentences that state a fact from the brief or a customer result. Do not list questions, "
                "guesses about their work, greetings or the ask.")
         data, meta = llm.ask(PLAYBOOK, f"Research brief:\n{llm.src(self._brief())}\n\n{ask}",
-                             tag="agent", prefer="gemini", temperature=0.4, max_tokens=8000,
+                             tag="agent", prefer="gemini", temperature=0.4, max_tokens=24000,
                              required=("subject", "body", "hook"), reuse=self.run["mode"] != "live")
         self.log(f"Agent: {meta['model']}{' (cached)' if meta['cached'] else ''}, {meta['ms'] / 1000:.1f} s")
         if meta.get("fallback_reason"):

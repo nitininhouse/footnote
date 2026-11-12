@@ -55,6 +55,6 @@ BANNED = ["i hope this finds you well", "i came across your profile", "i wanted 
           "just checking in", "quick question"]
 
 LLM_MODELS = [
-    {"name": "gemini-3.8-flash", "base": "https://generativelanguage.googleapis.com/v1beta/openai", "key": GEMINI_KEY},
+    {"name": "gemini-pro-latest", "base": "https://generativelanguage.googleapis.com/v1beta/openai", "key": GEMINI_KEY},
     {"name": "deepseek-flash", "base": "https://api.deepseek.com", "key": DEEPSEEK_KEY},
 ]

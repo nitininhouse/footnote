@@ -44,7 +44,7 @@ def _json(text):
 def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None, required=(), reuse=False):
     """Return (parsed_json, meta). `prefer` picks the first model to try ("gemini" or "deepseek");
     the other is the fallback. meta["model"] says which one actually answered."""
-    h = hashlib.sha1(json.dumps([system, prompt, temperature, prefer]).encode()).hexdigest()[:16]
+    h = hashlib.sha1(json.dumps([system, prompt, temperature, prefer, [m["name"] for m in config.LLM_MODELS]]).encode()).hexdigest()[:16]
     f = config.CACHE / f"llm_{tag}_{h}.json"
     if reuse and f.exists():      # only the offline test set reuses answers; live runs always ask the model
         rec = json.loads(f.read_text())
@@ -57,7 +57,7 @@ def ask(system, prompt, temperature=0.2, max_tokens=4000, tag="llm", prefer=None
         for attempt in range(2):
             t0 = time.time()
             try:
-                r = requests.post(f"{m['base']}/chat/completions", timeout=120,
+                r = requests.post(f"{m['base']}/chat/completions", timeout=240,
                                   headers={"authorization": f"Bearer {m['key']}"},
                                   json={"model": m["name"], "temperature": temperature, "max_tokens": max_tokens,
                                         "response_format": {"type": "json_object"},
