@@ -71,7 +71,6 @@ export default function NewRun(_: { cfg: Config | null }) {
     <div className="page">
       <div className="page-head">
         <div>
-          <p className="eyebrow">Prospect research · Crustdata + Gemini</p>
           <h1>Cold emails where every<br />sentence has a source.</h1>
           <p className="sub">Name a prospect. Footnote reads their profile and company news, picks the one reason to write now, and drafts a short email for you to review.</p>
         </div>
