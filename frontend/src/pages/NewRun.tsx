@@ -101,7 +101,7 @@ export default function NewRun(_: { cfg: Config | null }) {
             </div>
           </div>
           <div className="form-foot">
-            <span className="hint">About a minute. Nothing is sent until you approve it.</span>
+            <span />
             <button className="btn primary lg" disabled={busy || (!f.linkedin && (!f.name || !f.company))}>{busy ? 'Starting…' : 'Research and draft'}</button>
           </div>
           {err && <div className="banner bad" style={{ margin: '0 20px 16px' }}>{err}</div>}
